@@ -54,6 +54,7 @@ bool TopicDetecter::genWordSet()
     int proPos;
     int wordPos=0;
     string proShield="wyueopb";
+
     while( getline(infile,line) )
     {
         wordStart=0;
