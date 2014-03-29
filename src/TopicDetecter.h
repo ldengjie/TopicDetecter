@@ -4,9 +4,9 @@
 #include  <fstream>
 #include  <sstream>
 #include  <string>
-#include  <vector>
+#include  <list>
 #ifdef __CINT__
-#pragma link C++ class vector<vector<int> >;
+#pragma link C++ class list<list<int> >;
 #endif
 #include  <map>
 //#include  "TFile.h"
@@ -29,7 +29,7 @@ class TopicDetecter
     {
         int count;
         //int totalStep;
-        vector<int> distance;
+        list<int> distance;
     };
     CorrInfo _corrinfo;
     typedef struct WordInfo
@@ -38,7 +38,7 @@ class TopicDetecter
         string pro;
         map<string,CorrInfo> corrWord;
         //map<string,CorrInfo> corrTopic;
-        //vector<double> weiboTime;
+        //list<double> weiboTime;
         //bool weiboLock;
     };
     WordInfo newWord;
@@ -46,10 +46,10 @@ class TopicDetecter
     {
         int count;
         int topicLevel;
-        vector<string> keyWord;
-        vector<string> nextLevelTopic;
+        list<string> keyWord;
+        list<string> nextLevelTopic;
 
-        //vector<double> weiboTime;
+        //list<double> weiboTime;
     };
 
      TopicDetecter(){};
@@ -80,7 +80,7 @@ class TopicDetecter
     int topicLevel;
     string resultFile;
     string xmlFile;
-    vector<topicInput> topicUserDef;
+    list<topicInput> topicUserDef;
     map<string,WordInfo> wordSet;
     map<string,TopicInfo> topicSet;
 };
