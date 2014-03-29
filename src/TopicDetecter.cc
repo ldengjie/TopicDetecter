@@ -32,7 +32,6 @@ bool TopicDetecter::genWordSet()
     //open data file
 
     //loop all weibos 
-
     string line;
     ifstream infile(dataPath.c_str(),ios::in);
     if( !infile )
