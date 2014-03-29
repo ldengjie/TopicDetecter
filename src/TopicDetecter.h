@@ -51,6 +51,7 @@ class TopicDetecter
 
         //vector<double> weiboTime;
     };
+
      TopicDetecter(){};
      ~TopicDetecter(){};
     void setDataPath(string _dataPath){dataPath=_dataPath;};
