@@ -1,5 +1,4 @@
 #include    "TopicDetecter.h"
-#define DEBUG
 
 
 int main(int argc, char *argv[])
@@ -42,8 +41,8 @@ bool TopicDetecter::genWordSet()
     }
 
     int lineNum=0;
-    list<string> wordTmp;
-    list<int> wordPosTmp;
+    vector<string> wordTmp;
+    vector<int> wordPosTmp;
     int linesize;
     int wordStart=0;
     string term;
@@ -54,20 +53,13 @@ bool TopicDetecter::genWordSet()
     int proPos;
     int wordPos=0;
     string proShield="wyueopb";
-    int itNum=0;
 
     while( getline(infile,line) )
     {
         wordStart=0;
         wordPos=0;
         lineNum++;
-#ifdef DEBUG
-        if(lineNum%1000==0)
-        {
-            std::cout<<" lineNum  : "<<lineNum;
-            std::cout<<" size : "<< wordSet.size()<<endl;
-        }
-#endif
+        if(lineNum%1000==0) std::cout<<" lineNum  : "<<lineNum<<endl;
         //std::cout<<"line  ["<<line<<"]"<<endl;
         linesize=line.size();
         for( int i=0 ; i<linesize ; i++ )
@@ -110,33 +102,27 @@ bool TopicDetecter::genWordSet()
                             wordSet[word].count++;
                             if( wordTmp.size()==wordPosTmp.size() )
                             {
-                                //for( int j=0 ; j<(int)wordTmp.size() ; j++ )
-                                for( list<string>::iterator it=wordTmp.begin();it!=wordTmp.end();it++)
+                                for( int j=0 ; j<(int)wordTmp.size() ; j++ )
                                 {
-                                    if( word!=*it )
+                                    if( word!=wordTmp[j] )
                                     {
-                                        if( wordSet[word].corrWord.find(*it)==wordSet[word].corrWord.end() )
+                                        if( wordSet[word].corrWord.find(wordTmp[j])==wordSet[word].corrWord.end() )
                                         {
                                             _corrinfo.count=0;
-                                            wordSet[word].corrWord.insert(make_pair(*it,_corrinfo));
+                                            wordSet[word].corrWord.insert(make_pair(wordTmp[j],_corrinfo));
                                         } 
-                                        wordSet[word].corrWord[*it].count++;
-                                        list<int>::iterator iit=wordPosTmp.begin();
-                                        for( int k=0 ; k<itNum ; k++ )
-                                        {
-                                            iit++;//itNum++;
-                                        }
-                                        
-                                        wordSet[word].corrWord[*it].distance.push_back(wordPos-*iit);
-                                        if( wordSet[*it].corrWord.find(word)==wordSet[*it].corrWord.end() )
+                                        wordSet[word].corrWord[wordTmp[j]].count++;
+                                        //wordSet[word].corrWord[wordTmp[j]].distance.push_back(wordPos-wordPosTmp[j]);
+                                        wordSet[word].corrWord[wordTmp[j]].totalStep=wordPos-wordPosTmp[j];
+                                        if( wordSet[wordTmp[j]].corrWord.find(word)==wordSet[wordTmp[j]].corrWord.end() )
                                         {
                                             _corrinfo.count=0; 
-                                            wordSet[*it].corrWord.insert(make_pair(word,_corrinfo));
+                                            wordSet[wordTmp[j]].corrWord.insert(make_pair(word,_corrinfo));
                                         }
-                                        wordSet[*it].corrWord[word].count++;
-                                        wordSet[*it].corrWord[word].distance.push_back(*iit-wordPos);
+                                        wordSet[wordTmp[j]].corrWord[word].count++;
+                                        //wordSet[wordTmp[j]].corrWord[word].distance.push_back(wordPosTmp[j]-wordPos);
+                                        wordSet[wordTmp[j]].corrWord[word].totalStep=wordPosTmp[j]-wordPos;
                                     }
-                                    itNum++;
                                 }
 
                             }else
@@ -155,10 +141,9 @@ bool TopicDetecter::genWordSet()
         wordPos=0;
         wordTmp.clear();
         wordPosTmp.clear();
-        itNum=0;
     }
-    list<string>().swap(wordTmp);
-    list<int>().swap(wordPosTmp);
+    vector<string>().swap(wordTmp);
+    vector<int>().swap(wordPosTmp);
     std::cout<<"total wordSet size  : "<<wordSet.size()<<endl;
 /*
     std::cout<<"Print one word information :"<<endl;
@@ -173,11 +158,11 @@ bool TopicDetecter::genWordSet()
     string _word;
     string _pro;
     int _count;
-    list<string> _corrWord;
-    list<int> _corrCount;
-    list< list<int> >* _corrStep=0;
-    list<double> _corrAverage;
-    list<double> _corrSigma;
+    vector<string> _corrWord;
+    vector<int> _corrCount;
+    vector< vector<int> >* _corrStep=0;
+    vector<double> _corrAverage;
+    vector<double> _corrSigma;
     t->Branch("id",&_id,"id/I");
     t->Branch("word",&_word);
     t->Branch("pro",&_pro);
@@ -187,8 +172,8 @@ bool TopicDetecter::genWordSet()
     t->Branch("corrAverage",&_corrAverage);
     t->Branch("corrSigma",&_corrSigma);
     std::cout<<"0 "<<endl;
-    t->Branch("corrStep",&_corrStep,"list< list<int> >");
-    list<int> _distance;
+    t->Branch("corrStep",&_corrStep,"vector< vector<int> >");
+    vector<int> _distance;
     for( map<string,WordInfo>::iterator it=wordSet.begin(); it!=wordSet.end() ; it++ )
     {
         _id++;
@@ -197,7 +182,7 @@ bool TopicDetecter::genWordSet()
         _corrAverage.clear();
         _corrSigma.clear();
         if(_corrStep)_corrStep->clear();
-        else _corrStep=new list< list<int> >;
+        else _corrStep=new vector< vector<int> >;
         _word.assign(it->first);
         _pro.assign(it->second.pro);
         _count=it->second.count;
@@ -268,11 +253,11 @@ bool TopicDetecter::genTopicSet()
     string* _word=new string();
     string* _pro=new string();
     int _count;
-    list<string>* _corrWord=0;
-    list<int>* _corrCount=0;
-    list< list<int> >* _corrStep=0;
-    list<double>* _corrAverage=0;
-    list<double>* _corrSigma=0;
+    vector<string>* _corrWord=0;
+    vector<int>* _corrCount=0;
+    vector< vector<int> >* _corrStep=0;
+    vector<double>* _corrAverage=0;
+    vector<double>* _corrSigma=0;
     t->SetBranchAddress("id",&_id);
     t->SetBranchAddress("word",&_word);
     t->SetBranchAddress("pro",&_pro);
