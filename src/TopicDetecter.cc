@@ -145,6 +145,20 @@ bool TopicDetecter::genWordSet()
     vector<string>().swap(wordTmp);
     vector<int>().swap(wordPosTmp);
     std::cout<<"total wordSet size  : "<<wordSet.size()<<endl;
+    ofstream wordSetFile;
+    wordSetFile.open("wordSet.ldj");
+    for( map<string,WordInfo>::iterator it=wordSet.begin(); it!=wordSet.end() ; it++ )
+    {
+        wordSetFile<<it->first<<"|"<<it->second.count<<"|"<<it->second.pro <<"|";
+        for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
+        {
+            wordSetFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<";";
+        }
+        wordSetFile<<"|"<<endl;
+        
+    }
+    wordSetFile.close();
+    
 /*
     std::cout<<"Print one word information :"<<endl;
     string fname=dataPath.substr(dataPath.rfind("/")+1,(dataPath.rfind(".")-dataPath.rfind("/")-1));
