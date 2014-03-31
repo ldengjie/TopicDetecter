@@ -58,18 +58,22 @@ class TopicDetecter
                 normCount(firstWord);
                 normCount(secondWord);
                 float distance=0.;
+                //std::cout<<"secondWord.corrWord.size  : "<<secondWord.corrWord.size()<<endl;
                 for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
                     if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
                     {
                         distance+=(firstWord.corrWord[iit->first].frac-iit->second.frac)*(firstWord.corrWord[iit->first].frac-iit->second.frac);
+                        //std::cout<<"1.1 distance  : "<<distance<<endl;
                     }else if(iit->first==firstWord.word)
                     {
                         distance+=(firstWord.frac-iit->second.frac)*(firstWord.frac-iit->second.frac);
+                        //std::cout<<"1.2 distance  : "<<distance<<endl;
                     }
                     else
                     {
                         distance+=(iit->second.frac)*(iit->second.frac);
+                        //std::cout<<"1.3 distance  : "<<distance<<endl;
                     }
                 }
                 for( map<string,CorrInfo>::iterator iit=firstWord.corrWord.begin() ; iit!=firstWord.corrWord.end() ; iit++ )
@@ -79,13 +83,17 @@ class TopicDetecter
                     }else if(iit->first==secondWord.word)
                     {
                         distance+=(secondWord.frac-iit->second.frac)*(secondWord.frac-iit->second.frac);
+                        //std::cout<<"2.2 distance  : "<<distance<<endl;
                     }
                     else
                     {
                         distance+=(iit->second.frac)*(iit->second.frac);
+                        //std::cout<<"2.3 distance  : "<<distance<<endl;
                     }
                 }
+                //std::cout<<"- distance  : "<<distance<<endl;
                 distance=(float)sqrt(distance);
+                //std::cout<<"- distance  : "<<distance<<endl;
                 return distance;
             }
             //friend WordInfo &operator +=(WordInfo &firstWord,WordInfo &secondWord) ;

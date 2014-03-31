@@ -442,7 +442,7 @@ bool TopicDetecter::genTopicSet()
     //vector< vector<string> > topicWordVec;
     vector<string> topicWord[topicNum];
     int minTopicNum=0;
-    float maxDis=1000.;
+    float maxDis;
     float dis=0.;
     bool isOk=0;
     int loopNum=0;
@@ -452,11 +452,13 @@ bool TopicDetecter::genTopicSet()
         int ic=0;
         for( map<string,WordInfo>::iterator it=wordSet.begin() ; it!=wordSet.end() ; it++ )
         {
+            maxDis=1000.;
             ic++;
-            if(ic%100==0) std::cout<<"ic  : "<<ic<<endl;
+            if(ic%2000==0) std::cout<<"ic  : "<<ic<<endl;
             for( int i=0 ; i<topicNum; i++ )
             {
                 dis=it->second-meanWord[i];
+                //std::cout<<"dis  : "<<dis<<endl;
                 if( dis<maxDis )
                 {
                     maxDis=dis;
@@ -464,6 +466,7 @@ bool TopicDetecter::genTopicSet()
                 }
                 
             }
+            //std::cout<<"minTopicNum  : "<<minTopicNum<<endl;
             topicWord[minTopicNum].push_back(it->first);
         }
         std::cout<<"finished a loop , then check isOk ..."<<endl;
@@ -491,12 +494,33 @@ bool TopicDetecter::genTopicSet()
                 
             }
             ih++;
+            std::cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size()<<endl;
+            topicWord[i].clear();
 
         }
         
     }
     
-    std::cout<<"!!! find it !!! "<<endl;
+    std::cout<<"!!! find topics !!! "<<endl;
+    multimap<int,string> topicInf;
+    for( int i=0 ; i<topicNum ; i++ )
+    {
+        std::cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size()<<endl;
+        for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+        {
+            topicInf.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
+        }
+        std::cout<<"count and word list  : ";
+        for( multimap<int,string>::iterator it=topicInf.begin() ; it!=topicInf.end() ; it++ )
+        {
+            std::cout<<it->second<<","<<it->first<<";";
+        }
+        std::cout<<endl;
+        topicInf.clear();
+        
+        
+    }
+    
     
     //plus two words 
 
@@ -546,10 +570,12 @@ bool TopicDetecter::normCount(WordInfo& inWord)
         totalCount+=iit->second.count;
     }
     //normalize to 1 
-    inWord.frac=(float)inWord.frac/(float)totalCount;
+    inWord.frac=(float)inWord.count/(float)totalCount;
+    //std::cout<<"inWord.frac  : "<<inWord.frac<<endl;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
-        iit->second.frac=(float)iit->second.frac/(float)totalCount;
+        iit->second.frac=(float)iit->second.count/(float)totalCount;
+        //std::cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
     }
     return 1;
     
