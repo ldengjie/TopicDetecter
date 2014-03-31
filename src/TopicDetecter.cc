@@ -4,7 +4,6 @@
 int main(int argc, char *argv[])
 {
     //test
-
     if( argc==1 )
     {
         std::cout<<"Error : must need a input file ..."<<endl;
@@ -32,13 +31,13 @@ int main(int argc, char *argv[])
 
 bool TopicDetecter::genWordSet()
 {
-    //if WordSet .xml exits,read into wordSet
-
+    //if *WordSet.ldj exits,read into wordSet
     ifstream wordSetFile;
     wordSetFile.open(wordSetFileName.c_str(),ios::in);
     int lineNum=0;
     if( !wordSetFile )
     {
+        //new WordSet root file
         string line;
         ifstream infile(dataPath.c_str(),ios::in);
         if( !infile )
@@ -60,6 +59,7 @@ bool TopicDetecter::genWordSet()
         int wordPos=0;
         string proShield="wyueopb";
 
+        //loop all weibos 
         while( getline(infile,line) )
         {
             wordStart=0;
@@ -167,6 +167,7 @@ bool TopicDetecter::genWordSet()
         std::cout<<"Save wordSet file : "<<wordSetFileName<<" ..." <<endl;
     }else
     {
+        //open data file
         std::cout<<"Find wordSet file : "<<wordSetFileName<<" ..." <<endl;
         string wordSetLine;
         vector<string> wordInfVec;
@@ -184,6 +185,7 @@ bool TopicDetecter::genWordSet()
             bpos=0;
             epos=0;
             lineNum++;
+            if(lineNum%1000==0) std::cout<<" lineNum  : "<<lineNum<<endl;
             while( wordSetLine.find(wordInfTag,bpos)!=string::npos )
             {
                 epos=wordSetLine.find(wordInfTag,bpos);
@@ -238,13 +240,10 @@ bool TopicDetecter::genWordSet()
         }
     }
     std::cout<<"total wordSet size  : "<<wordSet.size()<<endl;
+    //close *WordSet.ldj
     wordSetFile.close();
-    //close .xml ,return
 
-    //open data file
-
-    //loop all weibos 
-
+    //save to .root file
     /*
        std::cout<<"Print one word information :"<<endl;
        string fname=dataPath.substr(dataPath.rfind("/")+1,(dataPath.rfind(".")-dataPath.rfind("/")-1));
@@ -313,26 +312,13 @@ bool TopicDetecter::genWordSet()
        _corrStep=NULL; //!!!!!!!!!!!!!This is very most important!!!!!
        delete _corrStep;
        }
+       //close data file
        t->Write();
        f->Close();
        std::cout<<"2 "<<endl;
-
-
-    //close data file
     */
-    //new WordSet root file
-
-    //write into .root
-
-    //close WordSet xml
-    return 1;
-}
-
-bool TopicDetecter::genTopicSet()
-{
-    //check wordSet file
-
-    /*
+    //read from .root
+    /* 
        TFile* f=new TFile("wordInfo.root","read");
        if( f->IsZombie() )
        {
@@ -405,6 +391,14 @@ bool TopicDetecter::genTopicSet()
        delete _corrStep;
     _corrStep=NULL;
     */
+
+    return 1;
+}
+
+bool TopicDetecter::genTopicSet()
+{
+    //check wordSet file
+
 
         //generate user defined topics
 
