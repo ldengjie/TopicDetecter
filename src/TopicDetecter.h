@@ -53,6 +53,7 @@ class TopicDetecter
                 word.clear();
                 corrWord.clear();
             }
+            //calculate distance between two words
             friend float operator -(WordInfo& firstWord,WordInfo& secondWord)
             {
                 normCount(firstWord);
@@ -96,6 +97,8 @@ class TopicDetecter
                 //std::cout<<"- distance  : "<<distance<<endl;
                 return distance;
             }
+
+            //plus two words 
             //friend WordInfo &operator +=(WordInfo &firstWord,WordInfo &secondWord) ;
             WordInfo& operator+=(const WordInfo& secondWord)
             {

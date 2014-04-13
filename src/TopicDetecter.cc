@@ -1,6 +1,5 @@
 #include    "TopicDetecter.h"
 
-
 int main(int argc, char *argv[])
 {
     //test
@@ -22,7 +21,7 @@ int main(int argc, char *argv[])
     t1->genWordSet();
     //generate topicSet
 
-    t1->genTopicSet();
+    //t1->genTopicSet();
     //delete class
     delete t1;
     t1=NULL;
@@ -409,7 +408,7 @@ bool TopicDetecter::genTopicSet()
     {
         wordNumEdge[i]=wordTotalNum/topicNum*i;
     }
-    wordNumEdge[topicNum]+=wordTotalNum-1;
+    wordNumEdge[topicNum]=wordTotalNum;
     int lineNum=0;
     vector<WordInfo> meanWord;
     WordInfo meanWordTmp;
@@ -446,6 +445,7 @@ bool TopicDetecter::genTopicSet()
     float dis=0.;
     bool isOk=0;
     int loopNum=0;
+    multimap<int,string> topicInfForTest;
     while( !isOk )
     {
         std::cout<<"now is the "<<++loopNum <<"th  looping ..."<<endl;
@@ -494,11 +494,31 @@ bool TopicDetecter::genTopicSet()
                 
             }
             ih++;
-            std::cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size()<<endl;
+            std::cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size();
+
+            for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+            {
+                topicInfForTest.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
+            }
+            multimap<int,string>::iterator it=topicInfForTest.end() ;
+            it--;
+            int coutNum=0;
+            for( ; it!=topicInfForTest.begin() ; it-- )
+            {
+                coutNum++;
+                std::cout<<" "<<it->second<<"_"<<it->first<<" ";
+                if( coutNum>12 )
+                {
+                    break;
+                }
+            }
+            std::cout<<endl;
+            topicInfForTest.clear();
+
             topicWord[i].clear();
 
         }
-        
+
     }
     
     std::cout<<"!!! find topics !!! "<<endl;
@@ -521,17 +541,18 @@ bool TopicDetecter::genTopicSet()
         
     }
     
-    
-    //plus two words 
-
-
-    //calculate distance between two words
-
-
     //generate user defined topics
 
-    //analysis wordSet,find out other topics
 
+    //analysis wordSet,find out other topics
+    
+
+    //calculate weight for each word
+    
+    //
+    //select out key words for each topic
+    //
+    //
     //save into resultFile
     return 1;
 }
