@@ -6,12 +6,15 @@
 #include  <string>
 #include  <vector>
 #include  <stdlib.h> //atoi,string==>int
-#ifdef __CINT__
-#pragma link C++ class vector<vector<int> >;
-#endif
+//#ifdef __CINT__
+//#pragma link C++ class vector<vector<int> >;
+//#endif
 #include  <map>
-//#include  "TFile.h"
-//#include  "TTree.h"
+#include  "TFile.h"
+#include  "TTree.h"
+
+#include  "TH2D.h"
+#include  "TProfile.h"
 #include  "math.h"
 
 
