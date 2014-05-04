@@ -244,156 +244,7 @@ bool TopicDetecter::genWordSet()
     //close *WordSet.ldj
     wordSetFile.close();
 
-    //save to .root file
-    /*
-       std::cout<<"Print one word information :"<<endl;
-       string fname=dataPath.substr(dataPath.rfind("/")+1,(dataPath.rfind(".")-dataPath.rfind("/")-1));
-       fname+="_wordInfo.root";
-       string fpath="../data/";
-       fpath+=fname;
-       std::cout<<"fpath  : "<<fpath<<endl;
-       TFile* f = new TFile(fpath.c_str(),"RECREATE");
-       TTree* t = new TTree("word","word");
-       int _id=0;
-       string _word;
-       string _pro;
-       int _count;
-       vector<string> _corrWord;
-       vector<int> _corrCount;
-       vector< vector<int> >* _corrStep=0;
-       vector<float> _corrAverage;
-       vector<float> _corrSigma;
-       t->Branch("id",&_id,"id/I");
-       t->Branch("word",&_word);
-       t->Branch("pro",&_pro);
-       t->Branch("count",&_count);
-       t->Branch("corrWord",&_corrWord);
-       t->Branch("corrCount",&_corrCount);
-       t->Branch("corrAverage",&_corrAverage);
-       t->Branch("corrSigma",&_corrSigma);
-       std::cout<<"0 "<<endl;
-       t->Branch("corrStep",&_corrStep,"vector< vector<int> >");
-       vector<int> _distance;
-       for( map<string,WordInfo>::iterator it=wordSet.begin(); it!=wordSet.end() ; it++ )
-       {
-       _id++;
-       _corrWord.clear();
-       _corrCount.clear();
-       _corrAverage.clear();
-       _corrSigma.clear();
-       if(_corrStep)_corrStep->clear();
-       else _corrStep=new vector< vector<int> >;
-       _word.assign(it->first);
-       _pro.assign(it->second.pro);
-       _count=it->second.count;
-       for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
-       {
-       _corrWord.push_back(iit->first);
-       _corrCount.push_back(iit->second.count);
-       int totalDis=0;
-       _distance.clear();
-       for( int k=0 ; k<iit->second.count ; k++ )
-       {
-       _distance.push_back(iit->second.distance[k]);
-       totalDis+=iit->second.distance[k];  
-       }
-       _corrStep->push_back(_distance);
-       float average=(float)totalDis/iit->second.count;
-       _corrAverage.push_back(average);
-       float sigma=0.;
-       for( int k=0 ; k<iit->second.count ; k++ )
-       {
-       sigma+=(iit->second.distance[k]-average)*(iit->second.distance[k]-average);  
-       }
-       sigma=sqrt(sigma);
-       _corrSigma.push_back(sigma);
-       }
-       t->Fill();
-       _corrStep->clear();
-       _corrStep=NULL; //!!!!!!!!!!!!!This is very most important!!!!!
-       delete _corrStep;
-       }
-    //close data file
-    t->Write();
-    f->Close();
-    std::cout<<"2 "<<endl;
-    */
-        //read from .root
-        /* 
-           TFile* f=new TFile("wordInfo.root","read");
-           if( f->IsZombie() )
-           {
-           std::cout<<" Error : can't open 'wordInfo.root' ... "<<endl;
-           return 0;
-           }
-           TTree* t=(TTree*)f->Get("word");
-           if( !t )
-           {
-           std::cout<<" Error : can't get tree 'Topic' ... "<<endl;
-           return 0;
-           }
-           int tnum=t->GetEntries();
-           std::cout<<" Entries number  : "<<t->GetEntries()<<endl;
-
-           int _id=0;
-           string* _word=new string();
-           string* _pro=new string();
-           int _count;
-           vector<string>* _corrWord=0;
-           vector<int>* _corrCount=0;
-           vector< vector<int> >* _corrStep=0;
-           vector<float>* _corrAverage=0;
-           vector<float>* _corrSigma=0;
-           t->SetBranchAddress("id",&_id);
-           t->SetBranchAddress("word",&_word);
-           t->SetBranchAddress("pro",&_pro);
-           t->SetBranchAddress("count",&_count);
-           t->SetBranchAddress("corrWord",&_corrWord);
-           t->SetBranchAddress("corrCount",&_corrCount);
-           t->SetBranchAddress("corrAverage",&_corrAverage);
-           t->SetBranchAddress("corrSigma",&_corrSigma);
-           t->SetBranchAddress("corrStep",&_corrStep);
-           std::cout<<"0.1 "<<endl;
-           for( int i=0 ; i<tnum ; i++ )
-           {
-           _corrWord->clear();
-           _corrCount->clear();
-           _corrAverage->clear();
-           _corrSigma->clear();
-           std::cout<<"i  : "<<i<<endl;
-           t->GetEntry(i);
-           std::cout<<"id  : "<<_id<<endl;
-           std::cout<<"word  : "<<*_word<<endl;
-           std::cout<<"pro  : "<<*_pro<<endl;
-           std::cout<<"count  : "<<_count<<endl;
-           std::cout<<"_corrWord->size()     : "<<_corrWord->size()<<endl;
-           std::cout<<"_corrAverage->size()  : "<<_corrAverage->size()<<endl;
-           std::cout<<"_corrSigma->size()    : "<<_corrSigma->size()<<endl;
-           std::cout<<"_corrCount->size()    : "<<_corrCount->size()<<endl;
-           std::cout<<"_corrStep->size()     : "<<_corrStep->size()<<endl;
-           for( int j=0 ; j<(int)_corrWord->size() ; j++ )
-           {
-           std::cout<<j<<" : "<<endl;
-           std::cout<<"corrWord     : "<<_corrWord->at(j)<<endl;
-           std::cout<<"corrAverage  : "<<_corrAverage->at(j)<<endl;
-           std::cout<<"corrSigma    : "<<_corrSigma->at(j)<<endl;
-           std::cout<<"corrCount    : "<<_corrCount->at(j)<<endl;
-           std::cout<<"corrStep ("<< (_corrStep->at(j)).size()<<") :";
-           for( int k=0 ; k<(int)(_corrStep->at(j)).size() ; k++ )
-           {
-           std::cout<<" "<<_corrStep->at(j).at(k);
-           }
-           std::cout<<endl;
-
-           }
-
-           }
-           f->Close();
-           delete _corrStep;
-        _corrStep=NULL;
-    */
-
-        return 1;
+    return 1;
 }
 
 bool TopicDetecter::genTopicSet()
@@ -464,7 +315,7 @@ bool TopicDetecter::genTopicSet()
                     maxDis=dis;
                     minTopicNum=i;
                 }
-                
+
             }
             //std::cout<<"minTopicNum  : "<<minTopicNum<<endl;
             topicWord[minTopicNum].push_back(it->first);
@@ -473,7 +324,7 @@ bool TopicDetecter::genTopicSet()
         isOk=1;
         int ih=0;
         for( int i=0 ; i<topicNum; i++ )
-        //for( vector< vector<string> >::iterator it=topicWordVec.begin();it!=topicWordVec.end()  ; it++ )
+            //for( vector< vector<string> >::iterator it=topicWordVec.begin();it!=topicWordVec.end()  ; it++ )
         {
             if( topicWord[i].size()!=0 )
             {
@@ -484,14 +335,14 @@ bool TopicDetecter::genTopicSet()
                 //}
                 for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
                 {
-                    
+
                     meanWordTmp+=wordSet[*iit];
                 }
-                
+
                 isOk=isOk&&(meanWord[ih]==meanWordTmp);
                 meanWord[ih].clear();
                 meanWord[ih]=meanWordTmp;
-                
+
             }
             ih++;
             std::cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size();
@@ -520,7 +371,7 @@ bool TopicDetecter::genTopicSet()
         }
 
     }
-    
+
     std::cout<<"!!! find topics !!! "<<endl;
     multimap<int,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
@@ -537,18 +388,18 @@ bool TopicDetecter::genTopicSet()
         }
         std::cout<<endl;
         topicInf.clear();
-        
-        
+
+
     }
-    
+
     //generate user defined topics
 
 
     //analysis wordSet,find out other topics
-    
+
 
     //calculate weight for each word
-    
+
     //
     //select out key words for each topic
     //
@@ -599,5 +450,5 @@ bool TopicDetecter::normCount(WordInfo& inWord)
         //std::cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
     }
     return 1;
-    
+
 }
