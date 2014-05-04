@@ -30,20 +30,16 @@ int main(int argc, char *argv[])
 
 bool TopicDetecter::genWordSet()
 {
-    //if *WordSet.ldj exits,read into wordSet
-        string fname=dataPath.substr(dataPath.rfind("/")+1,(dataPath.rfind(".")-dataPath.rfind("/")-1));
-        fname+="_wordInfo.root";
-        string fpath="../data/";
-        fpath+=fname;
-        std::cout<<"fpath  : "<<fpath<<endl;
     ifstream wordSetFile;
     wordSetFile.open(wordSetFileName.c_str(),ios::in);
     int lineNum=0;
     if( !wordSetFile )
     {
-        //new WordSet root file
-        string line;
+        //if *WordSet.ldj does not exist,create it
+        
+        //open origin weibo segment result
         ifstream infile(dataPath.c_str(),ios::in);
+        string line;
         if( !infile )
         {
             cout<<"file doesn't exist"<<endl;
@@ -156,6 +152,7 @@ bool TopicDetecter::genWordSet()
         infile.close();
         vector<string>().swap(wordTmp);
         vector<int>().swap(wordPosTmp);
+        //new wordSet file
         ofstream wordSetSaveFile;
         wordSetSaveFile.open(wordSetFileName.c_str());
         for( map<string,WordInfo>::iterator it=wordSet.begin(); it!=wordSet.end() ; it++ )
@@ -172,11 +169,10 @@ bool TopicDetecter::genWordSet()
         std::cout<<"Save wordSet file : "<<wordSetFileName<<" ..." <<endl;
     }else
     {
+        //if *WordSet.ldj exits,read into *_wordInfo.root
         //open data file and save to .root
-        std::cout<<"Print one word information :"<<endl;
-        goto readroot;
-        TFile* f = new TFile(fpath.c_str(),"RECREATE");
-
+        //std::cout<<"Print one word information :"<<endl;
+        TFile* fi = new TFile(rootFileName.c_str(),"RECREATE");
         TTree* t = new TTree("word","word");
         int _id=0;
         string _word;
@@ -282,92 +278,20 @@ bool TopicDetecter::genWordSet()
             newWord.corrWord.clear();
         }
         t->Write();
-        f->Close();
+        fi->Close();
     }
     std::cout<<"total wordSet size  : "<<wordSet.size()<<endl;
     //close *WordSet.ldj
-readroot:
     wordSetFile.close();
 
-    //save to .root file
-    //std::cout<<"Print one word information :"<<endl;
-    //string fname=dataPath.substr(dataPath.rfind("/")+1,(dataPath.rfind(".")-dataPath.rfind("/")-1));
-    //fname+="_wordInfo.root";
-    //string fpath="../data/";
-    //fpath+=fname;
-    //std::cout<<"fpath  : "<<fpath<<endl;
-    /*
-       TFile* f = new TFile(fpath.c_str(),"RECREATE");
-       TTree* t = new TTree("word","word");
-       int _id=0;
-       string _word;
-       string _pro;
-       int _count;
-       vector<string> _corrWord;
-       vector<int> _corrCount;
-    //vector< vector<int> >* _corrStep=0;
-    vector<double> _corrAverage;
-    //vector<float> _corrSigma;
-    t->Branch("id",&_id,"id/I");
-    t->Branch("word",&_word);
-    t->Branch("pro",&_pro);
-    t->Branch("count",&_count);
-    t->Branch("corrWord",&_corrWord);
-    t->Branch("corrCount",&_corrCount);
-    t->Branch("corrAverage",&_corrAverage);
-    //t->Branch("corrSigma",&_corrSigma);
-    std::cout<<"0 "<<endl;
-    //t->Branch("corrStep",&_corrStep,"vector< vector<int> >");
-    //vector<int> _distance;
-    for( map<string,WordInfo>::iterator it=wordSet.begin(); it!=wordSet.end() ; it++ )
-    {
-    _id++;
-    _corrWord.clear();
-    _corrCount.clear();
-    _corrAverage.clear();
-    //_corrSigma.clear();
-    //if(_corrStep)_corrStep->clear();
-    //else _corrStep=new vector< vector<int> >;
-    _word.assign(it->first);
-    _pro.assign(it->second.pro);
-    _count=it->second.count;
-    for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
-    {
-    _corrWord.push_back(iit->first);
-    _corrCount.push_back(iit->second.count);
-    _corrAverage.push_back((double)iit->second.totalStep/iit->second.count);
-    //_corrAverage.push_back(fabs((double)iit->second.totalStep/iit->second.count));
-    int totalDis=0;
+    return 1;
+}
 
-    //_distance.clear();
-    //for( int k=0 ; k<iit->second.count ; k++ )
-    //{
-    //_distance.push_back(iit->second.distance[k]);
-    //totalDis+=iit->second.distance[k];  
-    //}
-    //_corrStep->push_back(_distance);
-    //float average=(float)totalDis/iit->second.count;
-    //_corrAverage.push_back(average);
-    //float sigma=0.;
-    //for( int k=0 ; k<iit->second.count ; k++ )
-    //{
-    //sigma+=(iit->second.distance[k]-average)*(iit->second.distance[k]-average);  
-    //}
-    //sigma=sqrt(sigma);
-    //_corrSigma.push_back(sigma);
-    }
-    t->Fill();
-    //_corrStep->clear();
-    //_corrStep=NULL; //!!!!!!!!!!!!!This is very most important!!!!!
-    //delete _corrStep;
-    }
-    //close data file
-    t->Write();
-    f->Close();
-    */
-    std::cout<<"2 "<<endl;
-    //read from .root
-    TFile* fo=new TFile(fpath.c_str(),"update");
+bool TopicDetecter::genTopicSet()
+{
+
+    //read from .root,fill three histograms.
+    TFile* fo=new TFile(rootFileName.c_str(),"update");
     if( fo->IsZombie() )
     {
         std::cout<<" Error : can't open 'wordInfo.root' ... "<<endl;
@@ -454,13 +378,8 @@ readroot:
     fo->Close();
     //delete __corrStep;
     //__corrStep=NULL;
-    return 1;
-}
-
-bool TopicDetecter::genTopicSet()
-{
     //check wordSet file
-    //
+    
     //k topics initializing
     int wordTotalNum=(int)wordSet.size();
     int* wordNumEdge;
@@ -581,7 +500,6 @@ bool TopicDetecter::genTopicSet()
         }
 
     }
-
     std::cout<<"!!! find topics !!! "<<endl;
     multimap<int,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
@@ -610,10 +528,10 @@ bool TopicDetecter::genTopicSet()
 
     //calculate weight for each word
 
-    //
+    
     //select out key words for each topic
-    //
-    //
+   
+  
     //save into resultFile
     return 1;
 }
@@ -636,6 +554,12 @@ void TopicDetecter::setResultFile()
     resultFileName+="_Result.ldj";
     wordSetFileName.assign(infilestr);
     wordSetFileName+="_WordSet.ldj";
+   //.root  path&&name 
+    string fname=dataPath.substr(dataPath.rfind("/")+1,(dataPath.rfind(".")-dataPath.rfind("/")-1));
+    fname+="_wordInfo.root";
+    rootFileName="../data/";
+    rootFileName+=fname;
+    std::cout<<"rootFileName  : "<<rootFileName<<endl;
 }
 
 bool TopicDetecter::normCount(WordInfo& inWord)
