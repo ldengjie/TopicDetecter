@@ -55,6 +55,29 @@ class TopicDetecter
                 pro.clear();
                 word.clear();
                 corrWord.clear();
+                return 1;
+            }
+            WordInfo(){}
+            WordInfo(string _word,string _pro,int _count,vector<string> _corrWord,vector<int> _corrCount,vector<int> _corrTotalStep)
+            {
+                word.assign(_word);
+                pro.assign(_pro);
+                count=_count;
+                if( _corrWord.size()==_corrCount.size()&&_corrCount.size()==_corrTotalStep.size() )
+                {
+                    for( unsigned int i=0 ;i<_corrWord.size()  ; i++ )
+                    {
+                        CorrInfo corrinfoTmp;
+                        corrinfoTmp.frac=0.;
+                        corrinfoTmp.count=_corrCount.at(i);
+                        corrinfoTmp.totalStep=_corrTotalStep.at(i);
+                        corrWord.insert(make_pair(_corrWord.at(i),corrinfoTmp));
+                    }
+                    
+                }else
+                {
+                    std::cout<<"corrWord,corrCount,corrTotalStep 's size are not equal ,can't new a WordInfo  : "<<_corrWord.size()<<","<<_corrCount.size()<<","<<_corrTotalStep.size()<<endl;
+                }
             }
             //calculate distance between two words
             friend float operator -(WordInfo& firstWord,WordInfo& secondWord)
@@ -251,6 +274,7 @@ class TopicDetecter
         int topicLevel;
         string resultFileName;
         string wordSetFileName;
+        string rootFileName;
         vector<topicInput> topicUserDef;
         map<string,WordInfo> wordSet;
         map<string,TopicInfo> topicSet;
