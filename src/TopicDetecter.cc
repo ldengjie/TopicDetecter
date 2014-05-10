@@ -6,17 +6,19 @@ int main(int argc, char *argv[])
     if( argc==1 )
     {
         cout<<"Error : must need a input file ..."<<endl;
-        return 0;
+        //return 0;
+        exit(0);
     }
     if( argc>2 )
     {
         cout<<"Error : only need one input file ..."<<endl;
-        return 0;
+        //return 0;
+        exit(0);
     }
     string infileName=argv[1];
 
     //new class
-    TopicDetecter* t1=new TopicDetecter(infileName);
+    TopicDetecter* t1=new TopicDetecter(infileName,7);
     //generate wordSet
     t1->genWordSet();
     //generate topicSet
@@ -38,11 +40,12 @@ bool TopicDetecter::genWordSet()
     {
         //new WordSet root file
         string line;
-        ifstream infile(dataPath.c_str(),ios::in);
+        ifstream infile(inputFile.c_str(),ios::in);
         if( !infile )
         {
             cout<<"file doesn't exist"<<endl;
-            return 1;
+            //return 1;
+            exit(0);
         }
 
         vector<string> wordTmp;
@@ -134,7 +137,8 @@ bool TopicDetecter::genWordSet()
                                 }else
                                 {
                                     cout<<" !!! Error : wordTmp.size!=wordPosTmp.size "<<endl;
-                                    return 0;
+                                    //return 0;
+                                    exit(0);
                                 }
 
                             }
@@ -286,7 +290,8 @@ bool TopicDetecter::genTopicSet()
     if( meanWord.size()!=topicNum )
     {
         cout<<"Error : meanWord.size()!= "<<topicNum<<" ,please check it ..."<<endl;
-        return 0;
+        //return 0;
+        exit(0);
     }
     //loop for classifying topics
     //vector< vector<string> > topicWordVec;
@@ -410,22 +415,33 @@ bool TopicDetecter::genTopicSet()
 void TopicDetecter::setResultFile()
 {
     int beginPos=0,endPos=0;
-    if( dataPath.rfind("/")!=string::npos )
+    if( inputFile.rfind("/")!=string::npos )
     {
-        beginPos=dataPath.rfind("/")+1;
+        beginPos=inputFile.rfind("/")+1;
     }
-    if( dataPath.rfind(".")!=string::npos&&dataPath.rfind(".")>beginPos )
+    if( inputFile.rfind(".")!=string::npos&&inputFile.rfind(".")>beginPos )
     {
-        endPos=dataPath.rfind(".")-1;
+        endPos=inputFile.rfind(".")-1;
     }else
     {
-        endPos=dataPath.size();
+        endPos=inputFile.size();
     }
-    string infilestr=dataPath.substr(beginPos,endPos-beginPos+1);
-    resultFileName.assign(infilestr);
-    resultFileName+="_Result.ldj";
-    wordSetFileName.assign(infilestr);
+    if( outFilePath.size()>0 )
+    {
+        outFilePath+="/";
+    }else
+    {
+        outFilePath=inputFile.substr(0,beginPos);
+    }
+    string infilestr=inputFile.substr(beginPos,endPos-beginPos+1);
+    wordSetFileName.assign(outFilePath);
+    wordSetFileName+=infilestr;
     wordSetFileName+="_WordSet.ldj";
+    cout<<"wordSetFileName: "<<wordSetFileName<<endl;
+    resultFileName.assign(outFilePath);
+    resultFileName+=infilestr;
+    resultFileName+="_Result.ldj";
+    cout<<"resultFileName  : "<<resultFileName<<endl;
 }
 
 bool TopicDetecter::normCount(WordInfo& inWord)
@@ -436,19 +452,43 @@ bool TopicDetecter::normCount(WordInfo& inWord)
         return 1;
     }
     int totalCount=0;
-    totalCount=inWord.count;
+    int totalCount2=0;                                    
+    //totalCount=inWord.count;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
         totalCount+=iit->second.count;
+        totalCount2+=iit->second.count*iit->second.count;
     }
     //normalize to 1 
-    inWord.frac=(float)inWord.count/(float)totalCount;
+    //inWord.frac=(float)inWord.count/(float)totalCount;
+    inWord.frac=0;
     //cout<<"inWord.frac  : "<<inWord.frac<<endl;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
-        iit->second.frac=(float)iit->second.count/(float)totalCount;
+        //iit->second.frac=(float)iit->second.count/(float)totalCount;
+        iit->second.frac=(float)iit->second.count/sqrt((float)totalCount);
         //cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
     }
     return 1;
+
+}
+void TopicDetecter::printTopicResult(multimap<double,string>& _topicResult)
+{
+    int coutNum=0;
+    if( !_topicResult.empty() )
+    {
+        multimap<double,string>::iterator it=_topicResult.end() ;
+        it--;
+        for( ; it!=_topicResult.begin(); it-- )
+        {
+            coutNum++;
+            cout<<" "<<it->second<<"_"<<it->first<<" ";
+            if( coutNum>12 )
+            {
+                break;
+            }
+        }
+    }
+    cout<<endl;
 
 }
