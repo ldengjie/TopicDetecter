@@ -5,12 +5,12 @@ int main(int argc, char *argv[])
     //test
     if( argc==1 )
     {
-        std::cout<<"Error : must need a input file ..."<<endl;
+        cout<<"Error : must need a input file ..."<<endl;
         return 0;
     }
     if( argc>2 )
     {
-        std::cout<<"Error : only need one input file ..."<<endl;
+        cout<<"Error : only need one input file ..."<<endl;
         return 0;
     }
     string infileName=argv[1];
@@ -64,8 +64,8 @@ bool TopicDetecter::genWordSet()
             wordStart=0;
             wordPos=0;
             lineNum++;
-            if(lineNum%1000==0) std::cout<<" lineNum  : "<<lineNum<<endl;
-            //std::cout<<"line  ["<<line<<"]"<<endl;
+            if(lineNum%1000==0) cout<<" lineNum  : "<<lineNum<<endl;
+            //cout<<"line  ["<<line<<"]"<<endl;
             linesize=line.size();
             for( int i=0 ; i<linesize ; i++ )
             {
@@ -96,8 +96,8 @@ bool TopicDetecter::genWordSet()
                                 }
                                 wordTmp.push_back(word);
                                 wordPosTmp.push_back(wordPos);
-                                //std::cout<<"term  ["<<term<<"] -->";
-                                //std::cout<<" ["<<word<<"|"<<wordPro<<"|"<<wordPos<<"|"<<word.size()<<"]"<<endl;
+                                //cout<<"term  ["<<term<<"] -->";
+                                //cout<<" ["<<word<<"|"<<wordPro<<"|"<<wordPos<<"|"<<word.size()<<"]"<<endl;
                                 if( wordSet.find(word)==wordSet.end() )
                                 {
                                     wordSet.insert(pair<string,WordInfo>(word,newWord));
@@ -133,7 +133,7 @@ bool TopicDetecter::genWordSet()
 
                                 }else
                                 {
-                                    std::cout<<" !!! Error : wordTmp.size!=wordPosTmp.size "<<endl;
+                                    cout<<" !!! Error : wordTmp.size!=wordPosTmp.size "<<endl;
                                     return 0;
                                 }
 
@@ -164,11 +164,11 @@ bool TopicDetecter::genWordSet()
 
         }
         wordSetSaveFile.close();
-        std::cout<<"Save wordSet file : "<<wordSetFileName<<" ..." <<endl;
+        cout<<"Save wordSet file : "<<wordSetFileName<<" ..." <<endl;
     }else
     {
         //open data file
-        std::cout<<"Find wordSet file : "<<wordSetFileName<<" ..." <<endl;
+        cout<<"Find wordSet file : "<<wordSetFileName<<" ..." <<endl;
         string wordSetLine;
         vector<string> wordInfVec;
         string corrInfStr;
@@ -185,7 +185,7 @@ bool TopicDetecter::genWordSet()
             bpos=0;
             epos=0;
             lineNum++;
-            if(lineNum%1000==0) std::cout<<" lineNum  : "<<lineNum<<endl;
+            if(lineNum%1000==0) cout<<" lineNum  : "<<lineNum<<endl;
             while( wordSetLine.find(wordInfTag,bpos)!=string::npos )
             {
                 epos=wordSetLine.find(wordInfTag,bpos);
@@ -195,7 +195,7 @@ bool TopicDetecter::genWordSet()
             }
             if( wordInfVec.size()!=4 )
             {
-                std::cout<<"Error : line ["<<lineNum<<"] is wrong , please check ["<<wordSetLine<<"] ..." <<endl;
+                cout<<"Error : line ["<<lineNum<<"] is wrong , please check ["<<wordSetLine<<"] ..." <<endl;
                 continue;
             }
             newWord.word.assign(wordInfVec[0]);
@@ -224,7 +224,7 @@ bool TopicDetecter::genWordSet()
                 }
                 if( corrWordInfVec.size()!=3 )
                 {
-                    std::cout<<"Error  : corrWordInformation is wrong in line [ "<<lineNum<<"] , please check this corrWordInformation["<<corrWordInfStr<<"] ..."<<endl;
+                    cout<<"Error  : corrWordInformation is wrong in line [ "<<lineNum<<"] , please check this corrWordInformation["<<corrWordInfStr<<"] ..."<<endl;
                     continue;
                 }
                 _corrinfo.count=atoi(corrWordInfVec[1].c_str());
@@ -240,7 +240,7 @@ bool TopicDetecter::genWordSet()
             newWord.corrWord.clear();
         }
     }
-    std::cout<<"total wordSet size  : "<<wordSet.size()<<endl;
+    cout<<"total wordSet size  : "<<wordSet.size()<<endl;
     //close *WordSet.ldj
     wordSetFile.close();
 
@@ -272,7 +272,7 @@ bool TopicDetecter::genTopicSet()
                 meanWordTmp+=it->second;
                 if( lineNum==wordNumEdge[i+1]-1 )
                 {
-                    std::cout<<"lineNum  : "<<lineNum<<endl;
+                    cout<<"lineNum  : "<<lineNum<<endl;
                     meanWord.push_back(meanWordTmp);
                     meanWordTmp.clear();
                 }
@@ -281,11 +281,11 @@ bool TopicDetecter::genTopicSet()
         }
         lineNum++;
     }
-    std::cout<<"Topics initilizing finished ... "<<endl;
-    std::cout<<"meanWord.size()  : "<<meanWord.size()<<endl;
+    cout<<"Topics initilizing finished ... "<<endl;
+    cout<<"meanWord.size()  : "<<meanWord.size()<<endl;
     if( meanWord.size()!=topicNum )
     {
-        std::cout<<"Error : meanWord.size()!= "<<topicNum<<" ,please check it ..."<<endl;
+        cout<<"Error : meanWord.size()!= "<<topicNum<<" ,please check it ..."<<endl;
         return 0;
     }
     //loop for classifying topics
@@ -299,17 +299,17 @@ bool TopicDetecter::genTopicSet()
     multimap<int,string> topicInfForTest;
     while( !isOk )
     {
-        std::cout<<"now is the "<<++loopNum <<"th  looping ..."<<endl;
+        cout<<"now is the "<<++loopNum <<"th  looping ..."<<endl;
         int ic=0;
         for( map<string,WordInfo>::iterator it=wordSet.begin() ; it!=wordSet.end() ; it++ )
         {
             maxDis=1000.;
             ic++;
-            if(ic%2000==0) std::cout<<"ic  : "<<ic<<endl;
+            if(ic%2000==0) cout<<"ic  : "<<ic<<endl;
             for( int i=0 ; i<topicNum; i++ )
             {
                 dis=it->second-meanWord[i];
-                //std::cout<<"dis  : "<<dis<<endl;
+                //cout<<"dis  : "<<dis<<endl;
                 if( dis<maxDis )
                 {
                     maxDis=dis;
@@ -317,10 +317,10 @@ bool TopicDetecter::genTopicSet()
                 }
 
             }
-            //std::cout<<"minTopicNum  : "<<minTopicNum<<endl;
+            //cout<<"minTopicNum  : "<<minTopicNum<<endl;
             topicWord[minTopicNum].push_back(it->first);
         }
-        std::cout<<"finished a loop , then check isOk ..."<<endl;
+        cout<<"finished a loop , then check isOk ..."<<endl;
         isOk=1;
         int ih=0;
         for( int i=0 ; i<topicNum; i++ )
@@ -345,7 +345,7 @@ bool TopicDetecter::genTopicSet()
 
             }
             ih++;
-            std::cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size();
+            cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size();
 
             for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
             {
@@ -357,13 +357,13 @@ bool TopicDetecter::genTopicSet()
             for( ; it!=topicInfForTest.begin() ; it-- )
             {
                 coutNum++;
-                std::cout<<" "<<it->second<<"_"<<it->first<<" ";
+                cout<<" "<<it->second<<"_"<<it->first<<" ";
                 if( coutNum>12 )
                 {
                     break;
                 }
             }
-            std::cout<<endl;
+            cout<<endl;
             topicInfForTest.clear();
 
             topicWord[i].clear();
@@ -372,21 +372,21 @@ bool TopicDetecter::genTopicSet()
 
     }
 
-    std::cout<<"!!! find topics !!! "<<endl;
+    cout<<"!!! find topics !!! "<<endl;
     multimap<int,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
-        std::cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size()<<endl;
+        cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size()<<endl;
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
             topicInf.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
         }
-        std::cout<<"count and word list  : ";
+        cout<<"count and word list  : ";
         for( multimap<int,string>::iterator it=topicInf.begin() ; it!=topicInf.end() ; it++ )
         {
-            std::cout<<it->second<<","<<it->first<<";";
+            cout<<it->second<<","<<it->first<<";";
         }
-        std::cout<<endl;
+        cout<<endl;
         topicInf.clear();
 
 
@@ -443,11 +443,11 @@ bool TopicDetecter::normCount(WordInfo& inWord)
     }
     //normalize to 1 
     inWord.frac=(float)inWord.count/(float)totalCount;
-    //std::cout<<"inWord.frac  : "<<inWord.frac<<endl;
+    //cout<<"inWord.frac  : "<<inWord.frac<<endl;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
         iit->second.frac=(float)iit->second.count/(float)totalCount;
-        //std::cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
+        //cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
     }
     return 1;
 
