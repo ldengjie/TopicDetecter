@@ -125,8 +125,8 @@ bool TopicDetecter::genWordSet()
                                             } 
                                             wordSet[word].corrWord[wordTmp[j]].count++;
                                             //wordSet[word].corrWord[wordTmp[j]].distance.push_back(wordPos-wordPosTmp[j]);
-                                            wordSet[word].corrWord[wordTmp[j]].totalStep=wordPos-wordPosTmp[j];
-                                            wordSet[word].corrWord[wordTmp[j]].stepSquare=(wordPos-wordPosTmp[j])*(wordPos-wordPosTmp[j]);
+                                            wordSet[word].corrWord[wordTmp[j]].totalStep+=wordPos-wordPosTmp[j];
+                                            wordSet[word].corrWord[wordTmp[j]].stepSquare+=(wordPos-wordPosTmp[j])*(wordPos-wordPosTmp[j]);
                                             if( wordSet[wordTmp[j]].corrWord.find(word)==wordSet[wordTmp[j]].corrWord.end() )
                                             {
                                                 _corrinfo.count=0; 
@@ -134,8 +134,8 @@ bool TopicDetecter::genWordSet()
                                             }
                                             wordSet[wordTmp[j]].corrWord[word].count++;
                                             //wordSet[wordTmp[j]].corrWord[word].distance.push_back(wordPosTmp[j]-wordPos);
-                                            wordSet[wordTmp[j]].corrWord[word].totalStep=wordPosTmp[j]-wordPos;
-                                            wordSet[wordTmp[j]].corrWord[word].stepSquare=(wordPosTmp[j]-wordPos)*(wordPosTmp[j]-wordPos);
+                                            wordSet[wordTmp[j]].corrWord[word].totalStep+=wordPosTmp[j]-wordPos;
+                                            wordSet[wordTmp[j]].corrWord[word].stepSquare+=(wordPosTmp[j]-wordPos)*(wordPosTmp[j]-wordPos);
                                         }
                                     }
 
