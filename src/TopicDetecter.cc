@@ -32,15 +32,16 @@ int main(int argc, char *argv[])
 
 bool TopicDetecter::genWordSet()
 {
-    //if *WordSet.ldj exits,read into wordSet
     ifstream wordSetFile;
     wordSetFile.open(wordSetFileName.c_str(),ios::in);
     int lineNum=0;
+    //if *WordSet.ldj does not exist,create it
     if( !wordSetFile )
     {
-        //new WordSet root file
-        string line;
+
+        //open origin weibo segment result
         ifstream infile(inputFile.c_str(),ios::in);
+        string line;
         if( !infile )
         {
             cout<<"file doesn't exist"<<endl;
@@ -90,7 +91,7 @@ bool TopicDetecter::genWordSet()
                             wordPro=term.substr(proPos+1);
                             wordPos++;
                             //insert into wordSet
-                            if( proShield.find(wordPro[0])==string::npos )
+                            if( proShield.find(wordPro[0])==string::npos &&word.size()>3)
                             {
 
                                 if( word.size()==0 )
@@ -122,7 +123,8 @@ bool TopicDetecter::genWordSet()
                                             } 
                                             wordSet[word].corrWord[wordTmp[j]].count++;
                                             //wordSet[word].corrWord[wordTmp[j]].distance.push_back(wordPos-wordPosTmp[j]);
-                                            wordSet[word].corrWord[wordTmp[j]].totalStep=wordPos-wordPosTmp[j];
+                                            wordSet[word].corrWord[wordTmp[j]].totalStep+=wordPos-wordPosTmp[j];
+                                            wordSet[word].corrWord[wordTmp[j]].stepSquare+=(wordPos-wordPosTmp[j])*(wordPos-wordPosTmp[j]);
                                             if( wordSet[wordTmp[j]].corrWord.find(word)==wordSet[wordTmp[j]].corrWord.end() )
                                             {
                                                 _corrinfo.count=0; 
@@ -130,7 +132,8 @@ bool TopicDetecter::genWordSet()
                                             }
                                             wordSet[wordTmp[j]].corrWord[word].count++;
                                             //wordSet[wordTmp[j]].corrWord[word].distance.push_back(wordPosTmp[j]-wordPos);
-                                            wordSet[wordTmp[j]].corrWord[word].totalStep=wordPosTmp[j]-wordPos;
+                                            wordSet[wordTmp[j]].corrWord[word].totalStep+=wordPosTmp[j]-wordPos;
+                                            wordSet[wordTmp[j]].corrWord[word].stepSquare+=(wordPosTmp[j]-wordPos)*(wordPosTmp[j]-wordPos);
                                         }
                                     }
 
@@ -155,6 +158,7 @@ bool TopicDetecter::genWordSet()
         infile.close();
         vector<string>().swap(wordTmp);
         vector<int>().swap(wordPosTmp);
+        //new wordSet file
         ofstream wordSetSaveFile;
         wordSetSaveFile.open(wordSetFileName.c_str());
         for( map<string,WordInfo>::iterator it=wordSet.begin(); it!=wordSet.end() ; it++ )
@@ -162,7 +166,7 @@ bool TopicDetecter::genWordSet()
             wordSetSaveFile<<it->first<<"|"<<it->second.count<<"|"<<it->second.pro <<"|";
             for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
             {
-                wordSetSaveFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<","<<";";
+                wordSetSaveFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<";";
             }
             wordSetSaveFile<<"|"<<endl;
 
@@ -226,13 +230,14 @@ bool TopicDetecter::genWordSet()
                     corrWordInfVec.push_back(corrWordInfStr.substr(bpos,epos-bpos));
                     bpos=epos+1;
                 }
-                if( corrWordInfVec.size()!=3 )
+                if( corrWordInfVec.size()!=4 )
                 {
                     cout<<"Error  : corrWordInformation is wrong in line [ "<<lineNum<<"] , please check this corrWordInformation["<<corrWordInfStr<<"] ..."<<endl;
                     continue;
                 }
                 _corrinfo.count=atoi(corrWordInfVec[1].c_str());
                 _corrinfo.totalStep=atoi(corrWordInfVec[2].c_str());
+                _corrinfo.stepSquare=atoi(corrWordInfVec[3].c_str());
                 newWord.corrWord.insert(make_pair(corrWordInfVec[0],_corrinfo));
 
                 corrWordInfVec.clear();
