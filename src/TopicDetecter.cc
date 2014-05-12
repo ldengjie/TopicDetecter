@@ -166,7 +166,7 @@ bool TopicDetecter::genWordSet()
             wordSetSaveFile<<it->first<<"|"<<it->second.count<<"|"<<it->second.pro <<"|";
             for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
             {
-                wordSetSaveFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<";";
+                wordSetSaveFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
             }
             wordSetSaveFile<<"|"<<endl;
 
