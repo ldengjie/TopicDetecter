@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     TopicDetecter* t1=new TopicDetecter(infileName,7);
 
     //generate wordSet
-    t1->genWordSet();
+    //t1->genWordSet();
 
     //generate topicSet
     t1->genTopicSet();
@@ -168,7 +168,7 @@ bool TopicDetecter::genWordSet()
             wordSetSaveFile<<it->first<<"|"<<it->second.count<<"|"<<it->second.pro <<"|";
             for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
             {
-                wordSetSaveFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<";";
+                wordSetSaveFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
             }
             wordSetSaveFile<<"|"<<endl;
 
@@ -364,7 +364,7 @@ bool TopicDetecter::genTopicSet()
     gDirectory->Delete("fracVsAver;*");
     gDirectory->Delete("frac2Aver;*");
     gDirectory->Delete("aver2Frac;*");
-    TH2D* coutVsAver=new TH2D("coutVsAver","coutVsAver",360,-180,180,2000,0,2000);
+    TH2D* coutVsAver=new TH2D("coutVsAver","coutVsAver",360,-180,180,45000,0,45000);
     TProfile* cout2Aver;
     TProfile* aver2Cout;
     TH2D* fracVsAver=new TH2D("fracVsAver","fracVsAver",360,-180,180,1000,0,1);
@@ -376,13 +376,15 @@ bool TopicDetecter::genTopicSet()
     gDirectory->Delete("fracVsSigma;*");
     gDirectory->Delete("frac2Sigma;*");
     gDirectory->Delete("sigma2Frac;*");
-    TH2D* coutVsSigma=new TH2D("coutVsSigma","coutVsSigma",360,-180,180,2000,0,2000);
+    TH2D* coutVsSigma=new TH2D("coutVsSigma","coutVsSigma",360,-180,180,45000,0,45000);
     TProfile* cout2Sigma;
     TProfile* sigma2Cout;
     TH2D* fracVsSigma=new TH2D("fracVsSigma","fracVsSigma",360,-180,180,1000,0,1);
     TProfile* frac2Sigma;
     TProfile* sigma2Frac;
     TH1D* fracVsAverSliceY[80];
+    TH1D* fracVsSigmaSliceX[20];
+    double maxCount=0.;
     for( int i=0 ; i<tnum ; i++ )
     {
         //__corrWord->clear();
@@ -398,6 +400,16 @@ bool TopicDetecter::genTopicSet()
         {
             cout<<"Entry num  : "<<i<<endl;
         }
+        //if( __count>maxCount)
+        //{
+        //maxCount=__count;
+        //}
+        //if( __count>10000 )
+        //{
+        //cout<<"count  : "<<__count<<endl;
+        //cout<<"word  : "<<*__word<<endl;
+        //cout<<"pro  : "<<*__pro<<endl;
+        //}
         //cout<<"id  : "<<__id<<endl;
         //cout<<"word  : "<<*__word<<endl;
         //cout<<"pro  : "<<*__pro<<endl;
@@ -413,8 +425,18 @@ bool TopicDetecter::genTopicSet()
         normCount(event);
         for( map<string,CorrInfo>::iterator iit=event.corrWord.begin() ; iit!=event.corrWord.end() ; iit++ )
         {
+            if( iit->second.count>maxCount)
+            {
+                maxCount=iit->second.count;
+            }
+            if( iit->second.count>10000 )
+            {
+                cout<<"corrCount  : "<<iit->second.count<<endl;
+                cout<<"corrWord  : "<<iit->first<<endl;
+            }
             averageTmp=(float)iit->second.totalStep/(float)iit->second.count;
-            sigmaTmp=sqrt((float)iit->second.stepSquare/(float)iit->second.count-(averageTmp)*(averageTmp));
+            //sigmaTmp=sqrt((float)iit->second.stepSquare/(float)iit->second.count-(averageTmp)*(averageTmp));
+            sigmaTmp=sqrt((float)iit->second.stepSquare/(float)iit->second.count);
             coutVsAver->Fill(averageTmp,iit->second.count);
             fracVsAver->Fill(averageTmp,iit->second.frac);
             coutVsSigma->Fill(sigmaTmp,iit->second.count);
@@ -442,6 +464,7 @@ bool TopicDetecter::genTopicSet()
         */
 
     }
+    cout<<"maxCount  : "<<maxCount<<endl;
     coutVsAver->Write();
     cout2Aver=coutVsAver->ProfileX("cout2Aver");
     cout2Aver->Write();
@@ -478,9 +501,20 @@ bool TopicDetecter::genTopicSet()
         fracVsAverSliceY[i]->Write();
     }
 
+    //int yFirstBin=fracVsSigma->GetYaxis()->FindBin(-40);
+    for( int i=0 ; i<20 ; i++ )
+    {
 
-    //fo->Close();
-    //return 1;
+        nameStr=Form("fracVsSigmaSliceX_%f_%f",i*50*0.001,(i+1)*50*0.001);
+        nameStr2=nameStr+";*";
+        gDirectory->Delete(nameStr2);
+        fracVsSigmaSliceX[i]=fracVsSigma->ProjectionX(nameStr,i*50,(i+1)*50);
+        fracVsSigmaSliceX[i]->SetTitle(nameStr);
+        fracVsSigmaSliceX[i]->Write();
+    }
+
+    fo->Close();
+    return 1;
 
     //delete __corrStep;
     //__corrStep=NULL;
