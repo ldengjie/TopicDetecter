@@ -1,6 +1,6 @@
 #include    "TopicDetecter.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[])// ./TopicDetecter ../data/liangHui_d_1.ldj
 {
     //test
     if( argc==1 )
@@ -19,10 +19,10 @@ int main(int argc, char *argv[])
 
     //new class
     TopicDetecter* t1=new TopicDetecter(infileName,7);
-    //generate wordSet
+    //generate wordSet, if *WordSet.ldj does not exist,create it 
     t1->genWordSet();
-    //generate topicSet
 
+    //generate topicSet
     //t1->genTopicSet();
     //delete class
     delete t1;
@@ -49,8 +49,6 @@ bool TopicDetecter::genWordSet()
             exit(0);
         }
 
-        vector<string> wordTmp;
-        vector<int> wordPosTmp;
         int linesize;
         int wordStart=0;
         string term;
@@ -65,6 +63,8 @@ bool TopicDetecter::genWordSet()
         //loop all weibos 
         while( getline(infile,line) )
         {
+             wordInfoInOneWeiBo newWordInfoInOneWeiBo;
+             map<string,wordInfoInOneWeiBo> wordInfoInOneWeiBoSet;
             wordStart=0;
             wordPos=0;
             lineNum++;
@@ -98,66 +98,76 @@ bool TopicDetecter::genWordSet()
                                 {
                                     continue;
                                 }
-                                wordTmp.push_back(word);
-                                wordPosTmp.push_back(wordPos);
                                 //cout<<"term  ["<<term<<"] -->";
                                 //cout<<" ["<<word<<"|"<<wordPro<<"|"<<wordPos<<"|"<<word.size()<<"]"<<endl;
-                                if( wordSet.find(word)==wordSet.end() )
-                                {
-                                    wordSet.insert(pair<string,WordInfo>(word,newWord));
-                                    wordSet[word].count=0;
-                                    wordSet[word].word.assign(word);
-                                    wordSet[word].pro.assign(wordPro);
-                                }
-                                wordSet[word].count++;
-                                if( wordTmp.size()==wordPosTmp.size() )
-                                {
-                                    for( int j=0 ; j<(int)wordTmp.size() ; j++ )
-                                    {
-                                        if( word!=wordTmp[j] )
-                                        {
-                                            if( wordSet[word].corrWord.find(wordTmp[j])==wordSet[word].corrWord.end() )
-                                            {
-                                                _corrinfo.count=0;
-                                                wordSet[word].corrWord.insert(make_pair(wordTmp[j],_corrinfo));
-                                            } 
-                                            wordSet[word].corrWord[wordTmp[j]].count++;
-                                            //wordSet[word].corrWord[wordTmp[j]].distance.push_back(wordPos-wordPosTmp[j]);
-                                            wordSet[word].corrWord[wordTmp[j]].totalStep+=wordPos-wordPosTmp[j];
-                                            wordSet[word].corrWord[wordTmp[j]].stepSquare+=(wordPos-wordPosTmp[j])*(wordPos-wordPosTmp[j]);
-                                            if( wordSet[wordTmp[j]].corrWord.find(word)==wordSet[wordTmp[j]].corrWord.end() )
-                                            {
-                                                _corrinfo.count=0; 
-                                                wordSet[wordTmp[j]].corrWord.insert(make_pair(word,_corrinfo));
-                                            }
-                                            wordSet[wordTmp[j]].corrWord[word].count++;
-                                            //wordSet[wordTmp[j]].corrWord[word].distance.push_back(wordPosTmp[j]-wordPos);
-                                            wordSet[wordTmp[j]].corrWord[word].totalStep+=wordPosTmp[j]-wordPos;
-                                            wordSet[wordTmp[j]].corrWord[word].stepSquare+=(wordPosTmp[j]-wordPos)*(wordPosTmp[j]-wordPos);
-                                        }
-                                    }
 
-                                }else
+                                if( wordInfoInOneWeiBoSet.find(word)==wordInfoInOneWeiBoSet.end() )
                                 {
-                                    cout<<" !!! Error : wordTmp.size!=wordPosTmp.size "<<endl;
-                                    //return 0;
-                                    exit(0);
+                                    wordInfoInOneWeiBoSet.insert(pair<string,wordInfoInOneWeiBo>(word,newWordInfoInOneWeiBo));
+                                    wordInfoInOneWeiBoSet[word].count=0.;
+                                    wordInfoInOneWeiBoSet[word].pro.assign(wordPro);
                                 }
-
+                                wordInfoInOneWeiBoSet[word].count++;
+                                wordInfoInOneWeiBoSet[word].pos.push_back(wordPos);
                             }
                         }
                     }
                     wordStart=i+1;
                 }
             }
+            for( map<string,wordInfoInOneWeiBo>::iterator it=wordInfoInOneWeiBoSet.begin() ; it!=wordInfoInOneWeiBoSet.end() ; it++ )
+            {
+                if( it->second.count==it->second.pos.size() )
+                {
+                    if( wordSet.find(it->first)==wordSet.end() )
+                    {
+                        wordSet.insert(pair<string,WordInfo>(it->first,newWord));
+                        wordSet[it->first].count=0;
+                        wordSet[it->first].word.assign(it->first);
+                        wordSet[it->first].pro.assign(it->second.pro);
+                    }
+                    wordSet[it->first].count+=it->second.count;
+                    for( map<string,wordInfoInOneWeiBo>::iterator iit=wordInfoInOneWeiBoSet.begin() ; iit!=wordInfoInOneWeiBoSet.end() ; iit++ )
+                    {
+                        if( iit->first!=it->first )
+                        {
+                            if( wordSet[it->first].corrWord.find(iit->first)==wordSet[it->first].corrWord.end() )
+                            {
+                                _corrinfo.corrCount=0.;
+                                wordSet[it->first].corrWord.insert(make_pair(iit->first,_corrinfo));
+                            } 
+                            wordSet[it->first].corrWord[iit->first].corrCount+=iit->second.count;
+
+                            for( unsigned int i=0 ; i<it->second.pos.size() ; i++ )
+                            {
+                                multimap<int,int> minDis;
+                                for( unsigned int j=0 ; j<iit->second.pos.size() ; j++ )
+                                {
+
+                                    minDis.insert(make_pair(abs(iit->second.pos[j]-it->second.pos[i]),iit->second.pos[j]-it->second.pos[i]));
+                                }
+                                pair<std::multimap<int, int>::iterator, multimap<int, int>::iterator> range = minDis.equal_range(minDis.begin()->first);
+                                multimap<int, int>::iterator iter=range.second;
+                                iter--;
+                                int minStep=iter->second;
+                                wordSet[it->first].corrWord[iit->first].totalStep+=minStep;
+                                wordSet[it->first].corrWord[iit->first].stepSquare+=minStep*minStep;
+                            }
+
+                        }
+
+                    }
+
+                }else
+                {
+                    cout<<" !!! Error : word count!=pos.size "<<endl;
+                    exit(0);
+                }
+            }
             wordStart=0;
             wordPos=0;
-            wordTmp.clear();
-            wordPosTmp.clear();
         }
         infile.close();
-        vector<string>().swap(wordTmp);
-        vector<int>().swap(wordPosTmp);
         //new wordSet file
         ofstream wordSetSaveFile;
         wordSetSaveFile.open(wordSetFileName.c_str());
@@ -166,7 +176,7 @@ bool TopicDetecter::genWordSet()
             wordSetSaveFile<<it->first<<"|"<<it->second.count<<"|"<<it->second.pro <<"|";
             for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
             {
-                wordSetSaveFile<<iit->first<<","<<iit->second.count<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
+                 wordSetSaveFile<<iit->first<<","<<iit->second.corrCount<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
             }
             wordSetSaveFile<<"|"<<endl;
 
@@ -207,7 +217,7 @@ bool TopicDetecter::genWordSet()
                 continue;
             }
             newWord.word.assign(wordInfVec[0]);
-            newWord.count=atoi(wordInfVec[1].c_str());
+            newWord.count=atof(wordInfVec[1].c_str());
             newWord.pro.assign(wordInfVec[2]);
             corrInfStr.assign(wordInfVec[3]);
             bpos=0;
@@ -218,7 +228,7 @@ bool TopicDetecter::genWordSet()
                 corrInfVec.push_back(corrInfStr.substr(bpos,epos-bpos));
                 bpos=epos+1;
             }
-            for( int i=0 ; i<corrInfVec.size() ; i++ )
+            for( unsigned int i=0 ; i<corrInfVec.size() ; i++ )
             {
                 bpos=0;
                 epos=0;
@@ -235,7 +245,7 @@ bool TopicDetecter::genWordSet()
                     cout<<"Error  : corrWordInformation is wrong in line [ "<<lineNum<<"] , please check this corrWordInformation["<<corrWordInfStr<<"] ..."<<endl;
                     continue;
                 }
-                _corrinfo.count=atoi(corrWordInfVec[1].c_str());
+                _corrinfo.corrCount=atof(corrWordInfVec[1].c_str());
                 _corrinfo.totalStep=atoi(corrWordInfVec[2].c_str());
                 _corrinfo.stepSquare=atoi(corrWordInfVec[3].c_str());
                 newWord.corrWord.insert(make_pair(corrWordInfVec[0],_corrinfo));
