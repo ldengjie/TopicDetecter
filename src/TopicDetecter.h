@@ -6,8 +6,9 @@
 #include  <string>
 #include  <vector>
 #include  <stdlib.h> //atoi,string==>int
-//#ifdef __CINT__
-//#pragma link C++ class vector<vector<int> >;
+//#ifndef __CINT__
+//#pragma link C++ class vector<vector<float> >;
+//#pragma link C++ class vector<float>+;
 //#endif
 #include  <malloc.h>//malloc,calloc
 #include  <map>
@@ -15,6 +16,7 @@
 #include  "TTree.h"
 
 #include  "TH2D.h"
+#include  "TH3D.h"
 #include  "TProfile.h"
 #include  "math.h"
 
@@ -30,9 +32,16 @@ class TopicDetecter
             string name;
             string basePath;
         };
+        struct wordInfoInOneWeiBo
+        {
+            float count;
+            string pro;
+            vector<int> pos;
+        };
         struct CorrInfo
         {
-            int count;
+            float corrCount;
+            //float multiCount;
             float frac;
             int totalStep;
             int stepSquare;
@@ -41,7 +50,7 @@ class TopicDetecter
         CorrInfo _corrinfo;
         struct WordInfo
         {
-            int count;//number of word
+            float count;//number of word
             float frac;
             string pro;
             string word;
@@ -51,7 +60,7 @@ class TopicDetecter
             //bool weiboLock;
             bool clear()
             {
-                count=0;
+                count=0.;
                 frac=0.;
                 pro.clear();
                 word.clear();
@@ -59,19 +68,22 @@ class TopicDetecter
                 return 1;
             }
             WordInfo(){}
-            WordInfo(string _word,string _pro,int _count,vector<string> _corrWord,vector<int> _corrCount,vector<int> _corrTotalStep,vector<int> _corrStepSquare)
+            //WordInfo(string _word,string _pro,float _count,vector<string> _corrWord,vector<double> _corrCount,vector<double> _multiCount,vector<int> _corrTotalStep,vector<int> _corrStepSquare)
+            WordInfo(string _word,string _pro,float _count,vector<string> _corrWord,vector<double> _corrCount,vector<int> _corrTotalStep,vector<int> _corrStepSquare)
             {
                 word.assign(_word);
                 pro.assign(_pro);
-                count=_count;
+                count=(float)_count;
                 frac=0.;
+                //if( _corrWord.size()==_corrCount.size()&&_corrCount.size()==_corrTotalStep.size()&&_multiCount.size()==_corrTotalStep.size()&&_corrCount.size()==_corrStepSquare.size() )
                 if( _corrWord.size()==_corrCount.size()&&_corrCount.size()==_corrTotalStep.size()&&_corrCount.size()==_corrStepSquare.size() )
                 {
                     for( unsigned int i=0 ;i<_corrWord.size()  ; i++ )
                     {
                         CorrInfo corrinfoTmp;
                         corrinfoTmp.frac=0.;
-                        corrinfoTmp.count=_corrCount.at(i);
+                        corrinfoTmp.corrCount=(float)_corrCount.at(i);
+                        //corrinfoTmp.multiCount=(float)_multiCount.at(i);
                         corrinfoTmp.totalStep=_corrTotalStep.at(i);
                         corrinfoTmp.stepSquare=_corrStepSquare.at(i);
                         corrWord.insert(make_pair(_corrWord.at(i),corrinfoTmp));
@@ -79,72 +91,37 @@ class TopicDetecter
 
                 }else
                 {
+                    //std::cout<<"corrWord,corrCount,multiCount,corrTotalStep 's size are not equal ,can't new a WordInfo  : "<<_corrWord.size()<<","<<_corrCount.size()<<","<<_multiCount.size()<<","<<_corrTotalStep.size()<<","<<_corrStepSquare.size()<<endl;
                     std::cout<<"corrWord,corrCount,corrTotalStep 's size are not equal ,can't new a WordInfo  : "<<_corrWord.size()<<","<<_corrCount.size()<<","<<_corrTotalStep.size()<<","<<_corrStepSquare.size()<<endl;
                 }
             }
-            //calculate distance between two words
+            //calculate angle(distance) between two words,before it must do normCount()!!
             friend float operator -(WordInfo& firstWord,WordInfo& secondWord)
             {
-                normCount(firstWord);
-                normCount(secondWord);
-                float distance=0.;
-                float firstFrac=1.; 
-                float secondFrac=1.; 
-                //std::cout<<"secondWord.corrWord.size  : "<<secondWord.corrWord.size()<<endl;
+                float angle=0.;
                 for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
                     if( iit->first==firstWord.word )
                     {
-                        //firstFrac=1-iit->second.frac;
-                        firstFrac=sqrt(1-(iit->second.frac)*(iit->second.frac));
+                        angle+=iit->second.frac*firstWord.frac;
                     }
                 }
                 for( map<string,CorrInfo>::iterator iit=firstWord.corrWord.begin() ; iit!=firstWord.corrWord.end() ; iit++ )
                 {
                     if( iit->first==secondWord.word )
                     {
-                        //secondFrac=1-iit->second.frac;
-                        secondFrac=sqrt(1-(iit->second.frac)*(iit->second.frac));
+                        angle+=iit->second.frac*secondWord.frac;
                     }
                 }
                 for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
                     if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
                     {
-                        distance+=(firstWord.corrWord[iit->first].frac/secondFrac-iit->second.frac/firstFrac)*(firstWord.corrWord[iit->first].frac/secondFrac-iit->second.frac/firstFrac);
-                        //std::cout<<"1.1 distance  : "<<distance<<endl;
-                    }
-                    //else if(iit->first==firstWord.word)
-                    //{
-                    //distance+=(firstWord.frac-iit->second.frac)*(firstWord.frac-iit->second.frac);
-                    ////std::cout<<"1.2 distance  : "<<distance<<endl;
-                    //}
-                    else
-                    {
-                        distance+=(iit->second.frac/firstFrac)*(iit->second.frac/firstFrac);
-                        //std::cout<<"1.3 distance  : "<<distance<<endl;
+                        angle+=firstWord.corrWord[iit->first].frac*iit->second.frac;
                     }
                 }
-                for( map<string,CorrInfo>::iterator iit=firstWord.corrWord.begin() ; iit!=firstWord.corrWord.end() ; iit++ )
-                {
-                    if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
-                    {
-                    }
-                    //else if(iit->first==secondWord.word)
-                    //{
-                    //distance+=(secondWord.frac-iit->second.frac)*(secondWord.frac-iit->second.frac);
-                    ////std::cout<<"2.2 distance  : "<<distance<<endl;
-                    //}
-                    else
-                    {
-                        distance+=(iit->second.frac/secondFrac)*(iit->second.frac/secondFrac);
-                        //std::cout<<"2.3 distance  : "<<distance<<endl;
-                    }
-                }
-                //std::cout<<"- distance  : "<<distance<<endl;
-                distance=(float)sqrt(distance);
-                //std::cout<<"- distance  : "<<distance<<endl;
-                return distance;
+                angle=(float)acos(angle);
+                return angle;
             }
 
             //plus two words 
@@ -154,31 +131,35 @@ class TopicDetecter
                 if( word.empty() )
                 {
                     word.assign(secondWord.word);
+                    count=secondWord.count;
                 }
-                /*
-                   for( map<string,CorrInfo>::const_iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
-                   {
-                   if( corrWord.find(iit->first)!=corrWord.end() )
-                   {
-                   corrWord[iit->first].count+=iit->second.count;
-                   }
-                //else if(iit->first==word)
-                //{
-                //count+=iit->second.count; 
-                //}
-                else
+                for( map<string,CorrInfo>::const_iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
-                corrWord.insert(make_pair(iit->first,iit->second));
+                    if( corrWord.find(iit->first)!=corrWord.end() )
+                    {
+                        corrWord[iit->first].corrCount+=iit->second.corrCount;
+                    }
+                    else if(iit->first==word)
+                    {
+                        count+=iit->second.corrCount; 
+                    }
+                    else
+                    {
+                        CorrInfo secondWordTmp;
+                        secondWordTmp.corrCount=iit->second.corrCount;
+                        secondWordTmp.totalStep=0;
+                        secondWordTmp.stepSquare=0;
+                        secondWordTmp.frac=0;
+                        corrWord.insert(make_pair(iit->first,secondWordTmp));
+                    }
                 }
-                }
-                */
                 if( corrWord.find(secondWord.word)!=corrWord.end() )
                 {
-                    corrWord[secondWord.word].count+=secondWord.count;
+                    corrWord[secondWord.word].corrCount+=secondWord.count;
                 }else
                 {
                     CorrInfo secondWordTmp;
-                    secondWordTmp.count=secondWord.count;
+                    secondWordTmp.corrCount=secondWord.count;
                     secondWordTmp.totalStep=0;
                     secondWordTmp.stepSquare=0;
                     secondWordTmp.frac=0;
@@ -198,10 +179,10 @@ class TopicDetecter
                {
                if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
                {
-               firstWord.corrWord[iit->first].count+=iit->second.count;
+               firstWord.corrWord[iit->first].corrCount+=iit->second.corrCount;
                }else if(iit->first==firstWord.word)
                {
-               firstWord.count+=iit->second.count; 
+               firstWord.count+=iit->second.corrCount; 
                }
                else
                {
@@ -210,7 +191,7 @@ class TopicDetecter
                }
                if( firstWord.corrWord.find(secondWord.word)!=firstWord.corrWord.end() )
                {
-               firstWord.corrWord[secondWord.word].count+=secondWord.count;
+               firstWord.corrWord[secondWord.word].corrCount+=secondWord.count;
                }
             ////normCount();
             return firstWord;
@@ -232,13 +213,13 @@ class TopicDetecter
                 {
                     if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
                     {
-                        if( firstWord.corrWord[iit->first].count!=iit->second.count )
+                        if( firstWord.corrWord[iit->first].corrCount!=iit->second.corrCount )
                         {
                             return 0;
                         }
                     }else if(iit->first==firstWord.word)
                     {
-                        if( firstWord.count!=iit->second.count )
+                        if( firstWord.count!=iit->second.corrCount )
                         {
                             return 0;
                         }
@@ -249,7 +230,7 @@ class TopicDetecter
                 }
                 if( firstWord.corrWord.find(secondWord.word)!=firstWord.corrWord.end() )
                 {
-                    if( secondWord.count==firstWord.corrWord[secondWord.word].count )
+                    if( secondWord.count==firstWord.corrWord[secondWord.word].corrCount )
                     {
                     }else
                     {
@@ -264,7 +245,7 @@ class TopicDetecter
         WordInfo newWord;
         struct TopicInfo
         {
-            int count;
+            float count;
             int topicLevel;
             vector<string> keyWord;
             vector<string> nextLevelTopic;
@@ -293,7 +274,7 @@ class TopicDetecter
         void setTopicNum(int _topicNum){topicNum=_topicNum;}
         void setResultFile();//set relative path and file name ,maybe .txt or .xml
         void setResultPath(string _outFilePath);//set relative path and file name ,maybe .txt or .xml
-        void printTopicResult(multimap<double,string>& _topicResult );
+        void printTopicResult(multimap<float,string>& _topicResult );
         void addTopic(string _topicName)
         {
             topicInput _topic;
@@ -311,6 +292,7 @@ class TopicDetecter
         //map<string,TopicInfo> genTopicSet();
         bool genWordSet();
         bool genTopicSet();
+
 
     private:
         TString nameStr;
