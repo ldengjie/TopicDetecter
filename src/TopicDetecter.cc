@@ -621,21 +621,14 @@ bool TopicDetecter::genTopicSet()
             //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
             maxDis=1000.;
             ic++;
-            //if(ic%2000==0)
-            //{
-            //cout<<"ic  : "<<ic<<endl;
-            ////cout<<"word  : "<<event.word<<endl;
-            ////to->GetEntry(rootIndex[event.word]);
-            ////WordInfo eventTmp(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
-            ////cout<<"Tmp word  : "<<eventTmp.word<<endl;
-            //}
 
+            normCount(event);
+            //cout<<"dis : ";
             for( int i=0 ; i<topicNum; i++ )
             {
-                normCount(event);
                 normCount(meanWord[i]);
                 dis=event-meanWord[i];// must do normCount() at first 
-                //cout<<"dis  : "<<dis<<endl;
+                //cout<<"["<<i<<"|"<<meanWord[i].corrWord.size()<<"]"<<dis<<" ";
                 if( dis<maxDis )
                 {
                     maxDis=dis;
@@ -643,6 +636,7 @@ bool TopicDetecter::genTopicSet()
                 }
 
             }
+            //cout<<endl;
             //cout<<"minTopicNum  : "<<minTopicNum<<endl;
             topicWord[minTopicNum].push_back(event.word);
         }
@@ -684,6 +678,7 @@ bool TopicDetecter::genTopicSet()
             }
             printTopicResult(topicInfForTest);
             topicInfForTest.clear();
+            //topicWord[i].clear();
 
         }
 

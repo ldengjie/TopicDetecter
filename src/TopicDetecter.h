@@ -101,24 +101,25 @@ class TopicDetecter
                 float angle=0.;
                 for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
-                    if( iit->first==firstWord.word )
-                    {
-                        angle+=iit->second.frac*firstWord.frac;
-                    }
-                }
-                for( map<string,CorrInfo>::iterator iit=firstWord.corrWord.begin() ; iit!=firstWord.corrWord.end() ; iit++ )
-                {
-                    if( iit->first==secondWord.word )
-                    {
-                        angle+=iit->second.frac*secondWord.frac;
-                    }
-                }
-                for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
-                {
                     if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
                     {
                         angle+=firstWord.corrWord[iit->first].frac*iit->second.frac;
                     }
+                }
+                for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
+                {
+                    if( firstWord.word==iit->first )
+                    {
+                        angle+=iit->second.frac*firstWord.frac;
+                    }
+                }
+                if( firstWord.corrWord.find(secondWord.word)!=firstWord.corrWord.end())
+                {
+                    angle+=firstWord.corrWord[secondWord.word].frac*secondWord.frac;
+                }
+                if( firstWord.word==secondWord.word )
+                {
+                    angle+=secondWord.frac*firstWord.frac;
                 }
                 angle=(float)acos(angle);
                 return angle;
