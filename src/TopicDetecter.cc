@@ -20,7 +20,7 @@ int main(int argc, char *argv[])// ./TopicDetecter ../data/liangHui_d_1.ldj
     //new class
     TopicDetecter* t1=new TopicDetecter(infileName,7);
 
-    //generate wordSet, if *WordSet.ldj does not exist,create it ,if *WordSet.ldj exits,read into *_wordInfo.root(RECREATE)
+    //generate wordSet, if *WordSet.ldj does not exist,create it and return;if *WordSet.ldj exits,read into *_wordInfo.root(RECREATE)
     //t1->genWordSet();
 
     //generate topicSet
@@ -116,7 +116,7 @@ bool TopicDetecter::genWordSet()
                                 wordInfoInOneWeiBoSet[word].count++;
                                 wordInfoInOneWeiBoSet[word].pos.push_back(wordPos);
                             }
-                            
+
                         }
                     }
                     wordStart=i+1;
@@ -142,9 +142,11 @@ bool TopicDetecter::genWordSet()
                             if( wordSet[it->first].corrWord.find(iit->first)==wordSet[it->first].corrWord.end() )
                             {
                                 _corrinfo.corrCount=0.;
+                                _corrinfo.stepCount=0.;
                                 wordSet[it->first].corrWord.insert(make_pair(iit->first,_corrinfo));
                             } 
                             wordSet[it->first].corrWord[iit->first].corrCount+=iit->second.count;
+                            wordSet[it->first].corrWord[iit->first].stepCount+=it->second.count;
 
                             for( unsigned int i=0 ; i<it->second.pos.size() ; i++ )
                             {
@@ -188,8 +190,7 @@ bool TopicDetecter::genWordSet()
             wordSetSaveFile<<it->first<<"|"<<it->second.count<<"|"<<it->second.pro <<"|";
             for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
             {
-                wordSetSaveFile<<iit->first<<","<<iit->second.corrCount<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
-                //wordSetSaveFile<<iit->first<<","<<iit->second.corrCount<<","<<iit->second.multiCount<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
+                wordSetSaveFile<<iit->first<<","<<iit->second.corrCount<<","<<iit->second.stepCount<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
             }
             wordSetSaveFile<<"|"<<endl;
 
@@ -210,7 +211,7 @@ bool TopicDetecter::genWordSet()
         float _count;
         vector<string> _corrWord;
         vector<double> _corrCount;
-        //vector<double> _multiCount;
+        vector<double> _stepCount;
         //vector< vector<int> >* _corrStep=0;
         vector<double> _corrAverage;
         vector<int> _corrTotalStep;
@@ -223,7 +224,7 @@ bool TopicDetecter::genWordSet()
         t->Branch("count",&_count);
         t->Branch("corrWord",&_corrWord);
         t->Branch("corrCount",&_corrCount);
-        //t->Branch("multiCount",&_multiCount);
+        t->Branch("stepCount",&_stepCount);
         t->Branch("corrAverage",&_corrAverage);
         t->Branch("corrTotalStep",&_corrTotalStep);
         t->Branch("corrSigma",&_corrSigma);
@@ -283,15 +284,15 @@ bool TopicDetecter::genWordSet()
                     corrWordInfVec.push_back(corrWordInfStr.substr(bpos,epos-bpos));
                     bpos=epos+1;
                 }
-                if( corrWordInfVec.size()!=4 )
+                if( corrWordInfVec.size()!=5 )
                 {
                     cout<<"Error  : corrWordInformation is wrong in line [ "<<lineNum<<"] , please check this corrWordInformation["<<corrWordInfStr<<"] ..."<<endl;
                     continue;
                 }
                 _corrinfo.corrCount=atof(corrWordInfVec[1].c_str());
-                //_corrinfo.multiCount=atof(corrWordInfVec[2].c_str());
-                _corrinfo.totalStep=atoi(corrWordInfVec[2].c_str());
-                _corrinfo.stepSquare=atoi(corrWordInfVec[3].c_str());
+                _corrinfo.stepCount=atof(corrWordInfVec[2].c_str());
+                _corrinfo.totalStep=atoi(corrWordInfVec[3].c_str());
+                _corrinfo.stepSquare=atoi(corrWordInfVec[4].c_str());
                 newWord.corrWord.insert(make_pair(corrWordInfVec[0],_corrinfo));
 
                 corrWordInfVec.clear();
@@ -301,7 +302,7 @@ bool TopicDetecter::genWordSet()
             //if(newWord.corrWord.size()!=0) wordSet.insert(make_pair(wordInfVec[0],newWord));
             _corrWord.clear();
             _corrCount.clear();
-            //_multiCount.clear();
+            _stepCount.clear();
             _corrAverage.clear();
             _corrTotalStep.clear();
             _corrSigma.clear();
@@ -314,13 +315,12 @@ bool TopicDetecter::genWordSet()
             {
                 _corrWord.push_back(iit->first);
                 _corrCount.push_back((double)iit->second.corrCount);
-                //_multiCount.push_back((double)iit->second.multiCount);
+                _stepCount.push_back((double)iit->second.stepCount);
                 _corrTotalStep.push_back(iit->second.totalStep);
                 _corrStepSquare.push_back(iit->second.stepSquare);
-                //_corrAverage.push_back((double)iit->second.totalStep/(double)iit->second.multiCount);
-                //_corrSigma.push_back((double)iit->second.stepSquare/(double)iit->second.multiCount-((double)iit->second.totalStep/(double)iit->second.multiCount)*((double)iit->second.totalStep/(double)iit->second.multiCount));
-                _corrAverage.push_back((double)iit->second.totalStep/(double)iit->second.corrCount);
-                _corrSigma.push_back((double)iit->second.stepSquare/(double)iit->second.corrCount-((double)iit->second.totalStep/(double)iit->second.corrCount)*((double)iit->second.totalStep/(double)iit->second.corrCount));
+                _corrAverage.push_back((double)iit->second.totalStep/(double)iit->second.stepCount);
+                //_corrSigma.push_back((double)iit->second.stepSquare/(double)iit->second.stepCount-((double)iit->second.totalStep/(double)iit->second.stepCount)*((double)iit->second.totalStep/(double)iit->second.stepCount));
+                _corrSigma.push_back(sqrt((double)iit->second.stepSquare/(double)iit->second.stepCount));
             }
             t->Fill();
             wordInfVec.clear();
@@ -366,7 +366,7 @@ bool TopicDetecter::genTopicSet()
     float __count;
     vector<string>* __corrWord=0;
     vector<double>* __corrCount=0;
-    //vector<double>* __multiCount=0;
+    vector<double>* __stepCount=0;
     //vector< vector<int> >* __corrStep=0;
     vector<double>* __corrAverage=0;
     vector<int>* __corrTotalStep=0;
@@ -378,25 +378,21 @@ bool TopicDetecter::genTopicSet()
     to->SetBranchAddress("count",&__count);
     to->SetBranchAddress("corrWord",&__corrWord);
     to->SetBranchAddress("corrCount",&__corrCount);
-    //to->SetBranchAddress("multiCount",&__multiCount);
+    to->SetBranchAddress("stepCount",&__stepCount);
     to->SetBranchAddress("corrAverage",&__corrAverage);
     to->SetBranchAddress("corrTotalStep",&__corrTotalStep);
     to->SetBranchAddress("corrStepSquare",&__corrStepSquare);
     to->SetBranchAddress("corrSigma",&__corrSigma);
     //to->SetBranchAddress("corrStep",&__corrStep);
-    cout<<"0.1 "<<endl;
     //fill three histograms.
     float averageTmp=0.;
     float sigmaTmp=0.;
 
     gDirectory->Delete("sigma_relCount_corrCount;*");
     gDirectory->Delete("aver_relCount_corrCount;*");
-    cout<<"0.15 "<<endl;
     TH3D* sigma_relCount_corrCount=new TH3D("sigma_relCount_corrCount","sigma_relCount_corrCount",360,-180,180,400,0,40,400,0,40);
-    cout<<"0.16 "<<endl;
     TH3D* aver_relCount_corrCount=new TH3D("aver_relCount_corrCount","aver_relCount_corrCount",   360,-180,180,400,0,40,400,0,40);
 
-    cout<<"0.2 "<<endl;
     gDirectory->Delete("coutVsAver;*");
     gDirectory->Delete("cout2Aver;*");
     gDirectory->Delete("aver2Cout;*");
@@ -462,8 +458,8 @@ bool TopicDetecter::genTopicSet()
         ////cout<<"__corrSigma->size()    : "<<__corrSigma->size()<<endl;
         //cout<<"__corrCount->size()    : "<<__corrCount->size()<<endl;
         ////cout<<"__corrStep->size()     : "<<__corrStep->size()<<endl;
-        //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+        //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
         normCount(event);
         for( map<string,CorrInfo>::iterator iit=event.corrWord.begin() ; iit!=event.corrWord.end() ; iit++ )
         {
@@ -481,9 +477,9 @@ bool TopicDetecter::genTopicSet()
                 cout<<"corrCount  : "<<iit->second.corrCount<<endl;
                 cout<<"corrWord  : "<<iit->first<<endl;
             }
-            averageTmp=(float)iit->second.totalStep/iit->second.corrCount;
-            //sigmaTmp=sqrt((float)iit->second.stepSquare/iit->second.corrCount-(averageTmp)*(averageTmp));
-            sigmaTmp=sqrt((float)iit->second.stepSquare/iit->second.corrCount);
+            averageTmp=(float)iit->second.totalStep/iit->second.stepCount;
+            //sigmaTmp=sqrt((float)iit->second.stepSquare/iit->second.stepCount-(averageTmp)*(averageTmp));
+            sigmaTmp=sqrt((float)iit->second.stepSquare/iit->second.stepCount);
             coutVsAver->Fill(averageTmp,iit->second.corrCount/event.count);
             fracVsAver->Fill(averageTmp,iit->second.frac);
             aver_relCount_corrCount->Fill(averageTmp,iit->second.corrCount/event.count,iit->second.corrCount);
@@ -546,8 +542,8 @@ bool TopicDetecter::genTopicSet()
         fracVsSigmaSliceX[i]->Write();
     }
 
-    fo->Close();
-    return 1;
+    //fo->Close();
+    //return 1;
 
     //delete __corrStep;
     //__corrStep=NULL;
@@ -573,8 +569,8 @@ bool TopicDetecter::genTopicSet()
         //__corrSigma->clear();
         //__corrStepSquare->clear();
         to->GetEntry(i);
-        //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+        //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
         for( int i=0 ; i<topicNum ; i++ )
         {
             if( lineNum>=wordNumEdge[i]&& lineNum<wordNumEdge[i+1])
@@ -611,23 +607,28 @@ bool TopicDetecter::genTopicSet()
     multimap<float,string> topicInfForTest;
     while( !isOk )
     {
+        cout<<" "<<endl;
         cout<<"now is the "<<++loopNum <<"th  looping ..."<<endl;
+        for( int i=0 ; i<topicNum; i++ )
+        {
+            topicWord[i].clear();
+        }
         int ic=0;
         for( int i=0 ; i<tnum ; i++ )
         {
             to->GetEntry(i);
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+            WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
             maxDis=1000.;
             ic++;
-            if(ic%2000==0)
-            {
-                cout<<"ic  : "<<ic<<endl;
-                //cout<<"word  : "<<event.word<<endl;
-                //to->GetEntry(rootIndex[event.word]);
-                //WordInfo eventTmp(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
-                //cout<<"Tmp word  : "<<eventTmp.word<<endl;
-            }
+            //if(ic%2000==0)
+            //{
+            //cout<<"ic  : "<<ic<<endl;
+            ////cout<<"word  : "<<event.word<<endl;
+            ////to->GetEntry(rootIndex[event.word]);
+            ////WordInfo eventTmp(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+            ////cout<<"Tmp word  : "<<eventTmp.word<<endl;
+            //}
 
             for( int i=0 ; i<topicNum; i++ )
             {
@@ -659,30 +660,30 @@ bool TopicDetecter::genTopicSet()
                     //cout<<"get entry "<<endl;
                     to->GetEntry(rootIndex[*iit]);
                     //cout<<"obtain entry "<<endl;
-                    //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+                    WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+                    //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
                     meanWordTmp+=event;
                 }
 
+                if(isOk) cout<<"check ["<<i+1<<"th] topic : ";
                 isOk=isOk&&(meanWord[ih]==meanWordTmp);
                 meanWord[ih].clear();
                 meanWord[ih]=meanWordTmp;
 
             }
             ih++;
-            cout<<"the "<<i+1 <<"th topic's size  : "<<topicWord[i].size()<<endl;
+            cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
 
             //print out details of this topic during select topics
             for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
             {
                 to->GetEntry(rootIndex[topicWord[i][j]]);
-                //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+                WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+                //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
                 topicInfForTest.insert(make_pair((float)event.count,topicWord[i][j]));
             }
             printTopicResult(topicInfForTest);
             topicInfForTest.clear();
-            topicWord[i].clear();
 
         }
 
@@ -692,12 +693,12 @@ bool TopicDetecter::genTopicSet()
     multimap<float,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
-        cout<<"keywords in the "<<i+1 <<"th topic : "<<topicWord[i].size()<<endl;
+        cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
             to->GetEntry(rootIndex[topicWord[i][j]]);
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+            WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
             topicInf.insert(make_pair((float)event.count,topicWord[i][j]));
         }
         //cout<<"count and word list  : ";
@@ -722,14 +723,23 @@ bool TopicDetecter::genTopicSet()
             to->GetEntry(rootIndex[topicWord[i][j]]);
             topicTotalCount[i]+=__count;
             //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
             //topicInf.insert(make_pair(event.count,topicWord[i][j]));
         }
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
             to->GetEntry(rootIndex[topicWord[i][j]]);
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
-            normCount(event);//calculate corrFrac in each corrWord for 1.2
+            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+            WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+            float totalCorrCount=0.;
+            float totalStepCount=0.;
+            for( map<string,CorrInfo>::iterator it=event.corrWord.begin() ; it!=event.corrWord.end() ; it++ )
+            {
+                totalCorrCount+=it->second.corrCount;
+                totalStepCount+=it->second.stepCount;
+            }
+            totalCorrCount+=event.count;
+            //normCount(event);//calculate corrFrac in each corrWord for 1.2
             int vectorIndex=0;
             //0. possibility belong to this topic
             float pInTopic=0.;
@@ -740,16 +750,18 @@ bool TopicDetecter::genTopicSet()
                     if( topicWord[i][k]==it->first )
                     {
                         //1.1 sigma of distance interval of correlative word
-                        float stepSigma=(*__corrSigma)[vectorIndex]; 
+                        float stepSigma=(float)(*__corrSigma)[vectorIndex]; 
                         //1.2 correlative fraction of correlative word in correlative word list
-                        float corrFrac=it->second.frac;
-                        pInTopic+=corrFrac;
+                        //float corrFrac=it->second.frac;
+                        float corrFrac=it->second.corrCount/totalCorrCount;
+                        pInTopic+=it->second.stepCount/totalStepCount;
                         //1.3 count fraction of correlative word in all words of this topic
                         to->GetEntry(rootIndex[it->first]);
-                        //WordInfo corrEvent(*__word,*__pro,__count,*__corrWord,*__corrCount,*__multiCount,*__corrTotalStep,*__corrStepSquare);
-        WordInfo corrEvent(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
-                        float countFrac=(float)corrEvent.count/(float)topicTotalCount[i];
+                        WordInfo corrEvent(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+                        //WordInfo corrEvent(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
+                        float countFrac=corrEvent.count/topicTotalCount[i];
 
+                        cout<<" wordScore+=countFrac*corrFrac/stepSigma  : "<<wordScore<<"+="<<countFrac<<"*"<<countFrac<<"/"<<stepSigma<<endl;
                         wordScore+=countFrac*corrFrac/stepSigma;
                         break;
 
@@ -759,15 +771,17 @@ bool TopicDetecter::genTopicSet()
                 vectorIndex++;
             }
             //2. count of itself,treat count==1 as count ==2 to avoid ln(1)=0.
-            float wordCount=log(event.count==1?2:event.count);
+            //float wordCount=log(event.count==1?2:event.count);
+            float wordCount=event.count/topicTotalCount[i];
 
+            cout<<"wordScore*=(wordCount*pInTopic)  : "<<wordScore<<"*=("<<wordCount<<"*"<<pInTopic<<")"<<endl;
             wordScore*=(wordCount*pInTopic);
 
             topicWordScore.insert(make_pair(wordScore,topicWord[i][j]));
 
         }
         //print out details of this topic after select topics based on 'wordScore' 
-        cout<<"keywords in the "<<i+1 <<"th topic finally : "<<topicWord[i].size()<<endl;
+        cout<<" ["<<i+1 <<"th] topic's keywords : "<<topicWord[i].size()<<endl;
         printTopicResult(topicWordScore);
 
         resultFile<<"keywords in the "<<i+1 <<"th topic finally : "<<topicWord[i].size()<<endl;
@@ -851,7 +865,7 @@ bool TopicDetecter::normCount(WordInfo& inWord)
         //cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
         corrFrac+=(iit->second.frac)*(iit->second.frac);
     }
-    cout<<"inWord.frac  : "<<inWord.frac*inWord.frac<<" , corrFrac  : "<<corrFrac<<" , inWord.frac+corrFrac = "<<inWord.frac*inWord.frac+corrFrac<<endl;
+    //cout<<"inWord.frac  : "<<inWord.frac*inWord.frac<<" , corrFrac  : "<<corrFrac<<" , inWord.frac+corrFrac = "<<inWord.frac*inWord.frac+corrFrac<<endl;
     return 1;
 
 }
