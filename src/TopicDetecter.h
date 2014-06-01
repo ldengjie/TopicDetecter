@@ -133,6 +133,7 @@ class TopicDetecter
                 {
                     word.assign(secondWord.word);
                     count=secondWord.count;
+                    frac=0.;
                 }
                 for( map<string,CorrInfo>::const_iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {

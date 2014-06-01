@@ -645,8 +645,6 @@ bool TopicDetecter::genTopicSet()
         int ih=0;
         for( int i=0 ; i<topicNum; i++ )
         {
-            if( topicWord[i].size()!=0 )
-            {
                 meanWordTmp.clear();
                 for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
                 {
@@ -664,7 +662,6 @@ bool TopicDetecter::genTopicSet()
                 meanWord[ih].clear();
                 meanWord[ih]=meanWordTmp;
 
-            }
             ih++;
             cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" "<<endl;
 
@@ -674,7 +671,7 @@ bool TopicDetecter::genTopicSet()
                 to->GetEntry(rootIndex[topicWord[i][j]]);
                 WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
                 //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
-                topicInfForTest.insert(make_pair((float)event.count,topicWord[i][j]));
+                topicInfForTest.insert(make_pair(event.count,topicWord[i][j]));
             }
             printTopicResult(topicInfForTest);
             topicInfForTest.clear();
