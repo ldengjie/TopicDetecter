@@ -549,6 +549,7 @@ bool TopicDetecter::genTopicSet()
     //__corrStep=NULL;
 
     //k topics initializing
+        gettimeofday( &startTime, NULL );
     int wordTotalNum=tnum;
     int* wordNumEdge;
     wordNumEdge=(int*)malloc(sizeof(int)*(topicNum+1));
@@ -588,7 +589,9 @@ bool TopicDetecter::genTopicSet()
         lineNum++;
 
     }
-    cout<<"Topics initilizing finished ... "<<endl;
+        gettimeofday( &finishTime, NULL );
+        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+        cout<<"Topics initilizing finished  (Used time : "<<timeInterval<<" s) ..."<<endl;
     cout<<"meanWord.size()  : "<<meanWord.size()<<endl;
     if( meanWord.size()!=(unsigned)topicNum )
     {
@@ -603,12 +606,14 @@ bool TopicDetecter::genTopicSet()
     float maxDis;
     float dis=0.;
     bool isOk=0;
+    string okStr[2]={"NO","OK"};
     int loopNum=0;
     multimap<float,string> topicInfForTest;
     while( !isOk )
     {
         cout<<" "<<endl;
         cout<<"now is the "<<++loopNum <<"th  looping ..."<<endl;
+        gettimeofday( &startTime, NULL );
         for( int i=0 ; i<topicNum; i++ )
         {
             topicWord[i].clear();
@@ -640,7 +645,10 @@ bool TopicDetecter::genTopicSet()
             //cout<<"minTopicNum  : "<<minTopicNum<<endl;
             topicWord[minTopicNum].push_back(event.word);
         }
-        cout<<"finished a loop , then check isOk ..."<<endl;
+        gettimeofday( &finishTime, NULL );
+        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+        cout<<"finished a loop (Used time : "<<timeInterval<<" s), then check isOk ..."<<endl;
+        gettimeofday( &startTime, NULL );
         isOk=1;
         int ih=0;
         for( int i=0 ; i<topicNum; i++ )
@@ -657,13 +665,13 @@ bool TopicDetecter::genTopicSet()
                     meanWordTmp+=event;
                 }
 
-                if(isOk) cout<<"check ["<<i+1<<"th] topic : ";
+                //if(isOk) cout<<"check ["<<i+1<<"th] topic : ";
                 isOk=isOk&&(meanWord[ih]==meanWordTmp);
                 meanWord[ih].clear();
                 meanWord[ih]=meanWordTmp;
 
             ih++;
-            cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
+            cout<<" ["<<okStr[isOk?1:0]<<" "<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
 
             //print out details of this topic during select topics
             for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
@@ -678,10 +686,14 @@ bool TopicDetecter::genTopicSet()
             //topicWord[i].clear();
 
         }
-
+        gettimeofday( &finishTime, NULL );
+        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+        cout<<"finished check isOk (Used time : "<<timeInterval<<" s) ..."<<endl;
     }
     //print out details of this topic after select topics only based on 'count' 
+    cout<<" "<<endl;
     cout<<"!!! find topics !!! "<<endl;
+        gettimeofday( &finishTime, NULL );
     multimap<float,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
@@ -699,9 +711,15 @@ bool TopicDetecter::genTopicSet()
 
     }
 
+        gettimeofday( &finishTime, NULL );
+        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+        cout<<"Finish listing out topics (Used time : "<<timeInterval<<" s) ..."<<endl;
+    cout<<" "<<endl;
+        
     //select out key words for each topic
 
     //calculate weight for each word
+        gettimeofday( &startTime, NULL );
     multimap<float,string> topicWordScore;
     float wordScore=0.;
     float* topicTotalCount=(float*)calloc(topicNum,sizeof(float));
@@ -786,6 +804,10 @@ bool TopicDetecter::genTopicSet()
         topicWordScore.clear();
 
     }
+
+        gettimeofday( &finishTime, NULL );
+        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+        cout<<"Finish calculating weight for each word (Used time : "<<timeInterval<<" s) ..."<<endl;
     resultFile.close();
     //generate user defined topics
 

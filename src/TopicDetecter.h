@@ -19,6 +19,7 @@
 #include  "TH3D.h"
 #include  "TProfile.h"
 #include  "math.h"
+#include  <sys/time.h>//gettimeofday()
 
 using namespace std;
 
@@ -214,7 +215,7 @@ class TopicDetecter
             {
                 if( firstWord.corrWord.size()!=secondWord.corrWord.size() )
                 {
-                    cout<<"firstWord.corrWord.size()!=secondWord.corrWord.size() : "<<firstWord.corrWord.size()<<"!="<<secondWord.corrWord.size()<<endl;
+                    //cout<<"firstWord.corrWord.size()!=secondWord.corrWord.size() : "<<firstWord.corrWord.size()<<"!="<<secondWord.corrWord.size()<<endl;
                     return 0;
                 }
                 for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
@@ -223,19 +224,19 @@ class TopicDetecter
                     {
                         if( firstWord.corrWord[iit->first].corrCount!=iit->second.corrCount )
                         {
-                            cout<<"firstWord.corrWord[iit->first].corrCount!=iit->second.corrCount : "<<iit->first<<" "<<firstWord.corrWord[iit->first].corrCount<<"!="<<iit->second.corrCount<<endl;
+                            //cout<<"firstWord.corrWord[iit->first].corrCount!=iit->second.corrCount : "<<iit->first<<" "<<firstWord.corrWord[iit->first].corrCount<<"!="<<iit->second.corrCount<<endl;
                             return 0;
                         }
                     }else if(firstWord.word==iit->first)
                     {
                         if( firstWord.count!=iit->second.corrCount )
                         {
-                            cout<<"firstWord.count!=iit->second.corrCount : "<<iit->first<<" "<<firstWord.count<<"!="<<iit->second.corrCount<<endl;
+                            //cout<<"firstWord.count!=iit->second.corrCount : "<<iit->first<<" "<<firstWord.count<<"!="<<iit->second.corrCount<<endl;
                             return 0;
                         }
                     }else
                     {
-                        cout<<"Cant't find ["<<iit->first<<"] in firstword"<<endl;
+                        //cout<<"Cant't find ["<<iit->first<<"] in firstword"<<endl;
                         return 0;
                     }
                 }
@@ -243,7 +244,7 @@ class TopicDetecter
                 {
                     if( secondWord.count!=firstWord.corrWord[secondWord.word].corrCount )
                     {
-                        cout<<"secondWord.count!=firstWord.corrWord[secondWord.word].corrCount : "<<secondWord.word<<" "<<secondWord.count<<"!="<<firstWord.corrWord[secondWord.word].corrCount<<endl;
+                        //cout<<"secondWord.count!=firstWord.corrWord[secondWord.word].corrCount : "<<secondWord.word<<" "<<secondWord.count<<"!="<<firstWord.corrWord[secondWord.word].corrCount<<endl;
                         return 0;
                     }
 
@@ -251,16 +252,16 @@ class TopicDetecter
                 {
                     if( firstWord.count!=secondWord.count )
                     {
-                        cout<<"firstWord.count!=secondWord.count : "<<secondWord.word<<" "<<firstWord.count<<"!="<<secondWord.count<<endl;
+                        //cout<<"firstWord.count!=secondWord.count : "<<secondWord.word<<" "<<firstWord.count<<"!="<<secondWord.count<<endl;
                         return 0;
                     }
                 }else
                 {
-                    cout<<"Cant't find ["<<secondWord.word<<"] in firstword"<<endl;
+                    //cout<<"Cant't find ["<<secondWord.word<<"] in firstword"<<endl;
                     return 0;
                 }
 
-                cout<<" OK ! "<<endl;
+                //cout<<" OK ! "<<endl;
                 return 1; 
             }
         };
@@ -319,6 +320,8 @@ class TopicDetecter
     private:
         TString nameStr;
         TString nameStr2;
+        struct timeval startTime,finishTime;
+        double timeInterval;
         int topicNum;
         int topicLevel;
         string inputFile;
