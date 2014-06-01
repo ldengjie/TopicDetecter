@@ -659,14 +659,14 @@ bool TopicDetecter::genTopicSet()
                     meanWordTmp+=event;
                 }
 
-                if(isOk) cout<<"check ["<<i+1<<"th] topic : ";
+                if(isOk) cout<<"check ["<<i+1<<"th] topic : "<<endl;
                 isOk=isOk&&(meanWord[ih]==meanWordTmp);
                 meanWord[ih].clear();
                 meanWord[ih]=meanWordTmp;
 
             }
             ih++;
-            cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
+            cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" "<<endl;
 
             //print out details of this topic during select topics
             for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
@@ -688,7 +688,7 @@ bool TopicDetecter::genTopicSet()
     multimap<float,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
-        cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
+        cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" "<<endl;
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
             to->GetEntry(rootIndex[topicWord[i][j]]);
@@ -753,10 +753,7 @@ bool TopicDetecter::genTopicSet()
                         //1.3 count fraction of correlative word in all words of this topic
                         to->GetEntry(rootIndex[it->first]);
                         WordInfo corrEvent(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-                        //WordInfo corrEvent(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
                         float countFrac=corrEvent.count/topicTotalCount[i];
-
-                        cout<<" wordScore+=countFrac*corrFrac/stepSigma  : "<<wordScore<<"+="<<countFrac<<"*"<<countFrac<<"/"<<stepSigma<<endl;
                         wordScore+=countFrac*corrFrac/stepSigma;
                         break;
 
@@ -767,9 +764,9 @@ bool TopicDetecter::genTopicSet()
             }
             //2. count of itself,treat count==1 as count ==2 to avoid ln(1)=0.
             //float wordCount=log(event.count==1?2:event.count);
-            float wordCount=event.count/topicTotalCount[i];
+            //float wordCount=event.count/topicTotalCount[i];
+            float wordCount=event.count;
 
-            cout<<"wordScore*=(wordCount*pInTopic)  : "<<wordScore<<"*=("<<wordCount<<"*"<<pInTopic<<")"<<endl;
             wordScore*=(wordCount*pInTopic);
 
             topicWordScore.insert(make_pair(wordScore,topicWord[i][j]));
