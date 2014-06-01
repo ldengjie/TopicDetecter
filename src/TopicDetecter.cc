@@ -760,7 +760,7 @@ bool TopicDetecter::genTopicSet()
                     if( topicWord[i][k]==it->first )
                     {
                         //1.1 sigma of distance interval of correlative word
-                        float stepSigma=(float)(*__corrSigma)[vectorIndex]; 
+                        float stepSigma=sqrt((float)it->second.stepSquare/it->second.stepCount);
                         //1.2 correlative fraction of correlative word in correlative word list
                         //float corrFrac=it->second.frac;
                         float corrFrac=it->second.corrCount/totalCorrCount;
@@ -770,6 +770,7 @@ bool TopicDetecter::genTopicSet()
                         WordInfo corrEvent(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
                         float countFrac=corrEvent.count/topicTotalCount[i];
                         wordScore+=countFrac*corrFrac/stepSigma;
+                        //if(j>(int)topicWord[i].size()-2)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<"))"<<endl;
                         break;
 
                     }
@@ -784,6 +785,7 @@ bool TopicDetecter::genTopicSet()
 
             wordScore*=(wordCount*pInTopic);
 
+            //if(j>(int)topicWord[i].size()-2)cout<<topicWord[i][j]<<"("<<event.count <<")  : "<<wordScore<<" (wordCount:"<<wordCount<<" pInTopic:"<<pInTopic<<" totalCorrCount:"<<totalCorrCount<<" topicTotalCount[i]:"<<topicTotalCount[i]<<")"<<endl;
             topicWordScore.insert(make_pair(wordScore,topicWord[i][j]));
 
         }
