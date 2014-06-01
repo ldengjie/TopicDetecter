@@ -466,33 +466,31 @@ bool TopicDetecter::normCount(WordInfo& inWord)
     {
         return 1;
     }
-    int totalCount=0;
-    int totalCount2=0;                                    
-    //totalCount=inWord.count;
+    float totalCorrCount2=0.;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
-        totalCount+=iit->second.count;
-        totalCount2+=iit->second.count*iit->second.count;
+        totalCorrCount2+=iit->second.corrCount*iit->second.corrCount;
     }
+    totalCorrCount2+=inWord.count*inWord.count;
     //normalize to 1 
-    //inWord.frac=(float)inWord.count/(float)totalCount;
-    inWord.frac=0;
-    //cout<<"inWord.frac  : "<<inWord.frac<<endl;
+    inWord.frac=inWord.count/sqrt(totalCorrCount2);
+    float corrFrac=0.;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
-        //iit->second.frac=(float)iit->second.count/(float)totalCount;
-        iit->second.frac=(float)iit->second.count/sqrt((float)totalCount);
+        iit->second.frac=iit->second.corrCount/sqrt(totalCorrCount2);
         //cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
+        corrFrac+=(iit->second.frac)*(iit->second.frac);
     }
+    cout<<"inWord.frac  : "<<inWord.frac*inWord.frac<<" , corrFrac  : "<<corrFrac<<" , inWord.frac+corrFrac = "<<inWord.frac*inWord.frac+corrFrac<<endl;
     return 1;
 
 }
-void TopicDetecter::printTopicResult(multimap<double,string>& _topicResult)
+void TopicDetecter::printTopicResult(multimap<float,string>& _topicResult)
 {
     int coutNum=0;
     if( !_topicResult.empty() )
     {
-        multimap<double,string>::iterator it=_topicResult.end() ;
+        multimap<float,string>::iterator it=_topicResult.end() ;
         it--;
         for( ; it!=_topicResult.begin(); it-- )
         {
