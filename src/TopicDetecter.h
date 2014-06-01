@@ -61,33 +61,6 @@ class TopicDetecter
                 return 1;
             }
             WordInfo(){}
-            WordInfo(string _word,string _pro,float _count,vector<string> _corrWord,vector<double> _corrCount,vector<double> _stepCount,vector<int> _corrTotalStep,vector<int> _corrStepSquare)
-            //WordInfo(string _word,string _pro,float _count,vector<string> _corrWord,vector<double> _corrCount,vector<int> _corrTotalStep,vector<int> _corrStepSquare)
-            {
-                word.assign(_word);
-                pro.assign(_pro);
-                count=(float)_count;
-                frac=0.;
-                if( _corrWord.size()==_corrCount.size()&&_corrCount.size()==_corrTotalStep.size()&&_stepCount.size()==_corrTotalStep.size()&&_corrCount.size()==_corrStepSquare.size() )
-                //if( _corrWord.size()==_corrCount.size()&&_corrCount.size()==_corrTotalStep.size()&&_corrCount.size()==_corrStepSquare.size() )
-                {
-                    for( unsigned int i=0 ;i<_corrWord.size()  ; i++ )
-                    {
-                        CorrInfo corrinfoTmp;
-                        corrinfoTmp.frac=0.;
-                        corrinfoTmp.corrCount=(float)_corrCount.at(i);
-                        corrinfoTmp.stepCount=(float)_stepCount.at(i);
-                        corrinfoTmp.totalStep=_corrTotalStep.at(i);
-                        corrinfoTmp.stepSquare=_corrStepSquare.at(i);
-                        corrWord.insert(make_pair(_corrWord.at(i),corrinfoTmp));
-                    }
-
-                }else
-                {
-                    std::cout<<"corrWord,corrCount,stepCount,corrTotalStep 's size are not equal ,can't new a WordInfo  : "<<_corrWord.size()<<","<<_corrCount.size()<<","<<_stepCount.size()<<","<<_corrTotalStep.size()<<","<<_corrStepSquare.size()<<endl;
-                    //std::cout<<"corrWord,corrCount,corrTotalStep 's size are not equal ,can't new a WordInfo  : "<<_corrWord.size()<<","<<_corrCount.size()<<","<<_corrTotalStep.size()<<","<<_corrStepSquare.size()<<endl;
-                }
-            }
             //calculate angle(distance) between two words,before it must do normCount()!!
             friend float operator -(WordInfo& firstWord,WordInfo& secondWord)
             {
@@ -126,6 +99,7 @@ class TopicDetecter
                 {
                     word.assign(secondWord.word);
                     count=secondWord.count;
+                    frac=0.;
                 }
                 for( map<string,CorrInfo>::const_iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
@@ -144,7 +118,7 @@ class TopicDetecter
                         secondWordTmp.stepCount=0.;
                         secondWordTmp.totalStep=0;
                         secondWordTmp.stepSquare=0;
-                        secondWordTmp.frac=0;
+                        secondWordTmp.frac=0.;
                         corrWord.insert(make_pair(iit->first,secondWordTmp));
                     }
                 }
@@ -161,7 +135,7 @@ class TopicDetecter
                     secondWordTmp.stepCount=0.;
                     secondWordTmp.totalStep=0;
                     secondWordTmp.stepSquare=0;
-                    secondWordTmp.frac=0;
+                    secondWordTmp.frac=0.;
                     corrWord.insert(make_pair(secondWord.word,secondWordTmp));
                 }
                 ////normCount();
