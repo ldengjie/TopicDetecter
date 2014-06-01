@@ -210,12 +210,14 @@ bool TopicDetecter::genWordSet()
         string corrInfTag=";";
         string corrWordInfTag=",";
         lineNum=0;
+        //int insertNum=0;
         while( getline(wordSetFile,wordSetLine) )
         {
             bpos=0;
             epos=0;
             lineNum++;
-            if(lineNum%1000==0) cout<<" lineNum  : "<<lineNum<<endl;
+            //if(lineNum%1000==0) cout<<" lineNum  : "<<lineNum<<endl;
+            //cout<<" lineNum  : "<<lineNum<<endl;
             while( wordSetLine.find(wordInfTag,bpos)!=string::npos )
             {
                 epos=wordSetLine.find(wordInfTag,bpos);
@@ -265,7 +267,11 @@ bool TopicDetecter::genWordSet()
                 corrWordInfVec.clear();
             }
             corrInfVec.clear();
-            if(newWord.corrWord.size()!=0) wordSet.insert(make_pair(wordInfVec[0],newWord));
+            //if(newWord.corrWord.size()!=0) 
+            //{
+                wordSet.insert(make_pair(wordInfVec[0],newWord));
+                //cout<<"insert "<<++insertNum<<endl;
+                //}
             wordInfVec.clear();
             newWord.corrWord.clear();
         }
@@ -475,6 +481,7 @@ bool TopicDetecter::genTopicSet()
                         //1.3 count fraction of correlative word in all words of this topic
                         float countFrac=wordSet[it->first].count/topicTotalCount[i];
                         wordScore+=countFrac*corrFrac/stepSigma;
+                        //if(j>(int)topicWord[i].size()-2)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<"))"<<endl;
                         break;
 
                     }
@@ -488,6 +495,7 @@ bool TopicDetecter::genTopicSet()
             //float wordCount=event.count;
 
             wordScore*=(wordCount*pInTopic);
+            //if(j>(int)topicWord[i].size()-2)cout<<topicWord[i][j]<<"("<<event.count <<")  : "<<wordScore<<" (wordCount:"<<wordCount<<" pInTopic:"<<pInTopic<<" totalCorrCount:"<<totalCorrCount<<" topicTotalCount[i]:"<<topicTotalCount[i]<<")"<<endl;
 
             topicWordScore.insert(make_pair(wordScore,topicWord[i][j]));
 
