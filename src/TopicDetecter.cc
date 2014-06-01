@@ -49,6 +49,8 @@ bool TopicDetecter::genWordSet()
             exit(0);
         }
 
+        //vector<string> wordTmp;
+        //vector<int> wordPosTmp;
         int linesize;
         int wordStart=0;
         string term;
@@ -63,8 +65,8 @@ bool TopicDetecter::genWordSet()
         //loop all weibos 
         while( getline(infile,line) )
         {
-             wordInfoInOneWeiBo newWordInfoInOneWeiBo;
-             map<string,wordInfoInOneWeiBo> wordInfoInOneWeiBoSet;
+            wordInfoInOneWeiBo newWordInfoInOneWeiBo;
+            map<string,wordInfoInOneWeiBo> wordInfoInOneWeiBoSet;
             wordStart=0;
             wordPos=0;
             lineNum++;
@@ -98,6 +100,8 @@ bool TopicDetecter::genWordSet()
                                 {
                                     continue;
                                 }
+                                //wordTmp.push_back(word);
+                                //wordPosTmp.push_back(wordPos);
                                 //cout<<"term  ["<<term<<"] -->";
                                 //cout<<" ["<<word<<"|"<<wordPro<<"|"<<wordPos<<"|"<<word.size()<<"]"<<endl;
 
@@ -110,11 +114,13 @@ bool TopicDetecter::genWordSet()
                                 wordInfoInOneWeiBoSet[word].count++;
                                 wordInfoInOneWeiBoSet[word].pos.push_back(wordPos);
                             }
+
                         }
                     }
                     wordStart=i+1;
                 }
             }
+
             for( map<string,wordInfoInOneWeiBo>::iterator it=wordInfoInOneWeiBoSet.begin() ; it!=wordInfoInOneWeiBoSet.end() ; it++ )
             {
                 if( it->second.count==it->second.pos.size() )
@@ -134,9 +140,11 @@ bool TopicDetecter::genWordSet()
                             if( wordSet[it->first].corrWord.find(iit->first)==wordSet[it->first].corrWord.end() )
                             {
                                 _corrinfo.corrCount=0.;
+                                _corrinfo.stepCount=0.;
                                 wordSet[it->first].corrWord.insert(make_pair(iit->first,_corrinfo));
                             } 
                             wordSet[it->first].corrWord[iit->first].corrCount+=iit->second.count;
+                            wordSet[it->first].corrWord[iit->first].stepCount+=it->second.count;
 
                             for( unsigned int i=0 ; i<it->second.pos.size() ; i++ )
                             {
@@ -166,8 +174,12 @@ bool TopicDetecter::genWordSet()
             }
             wordStart=0;
             wordPos=0;
+            //wordTmp.clear();
+            //wordPosTmp.clear();
         }
         infile.close();
+        //vector<string>().swap(wordTmp);
+        //vector<int>().swap(wordPosTmp);
         //new wordSet file
         ofstream wordSetSaveFile;
         wordSetSaveFile.open(wordSetFileName.c_str());
@@ -176,7 +188,7 @@ bool TopicDetecter::genWordSet()
             wordSetSaveFile<<it->first<<"|"<<it->second.count<<"|"<<it->second.pro <<"|";
             for( map<string,CorrInfo>::iterator iit=it->second.corrWord.begin() ; iit!=it->second.corrWord.end() ; iit++ )
             {
-                 wordSetSaveFile<<iit->first<<","<<iit->second.corrCount<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
+                wordSetSaveFile<<iit->first<<","<<iit->second.corrCount<<","<<iit->second.stepCount<<","<<iit->second.totalStep<<","<<iit->second.stepSquare<<",;";
             }
             wordSetSaveFile<<"|"<<endl;
 
@@ -481,7 +493,7 @@ bool TopicDetecter::normCount(WordInfo& inWord)
         //cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
         corrFrac+=(iit->second.frac)*(iit->second.frac);
     }
-    cout<<"inWord.frac  : "<<inWord.frac*inWord.frac<<" , corrFrac  : "<<corrFrac<<" , inWord.frac+corrFrac = "<<inWord.frac*inWord.frac+corrFrac<<endl;
+    //cout<<"inWord.frac  : "<<inWord.frac*inWord.frac<<" , corrFrac  : "<<corrFrac<<" , inWord.frac+corrFrac = "<<inWord.frac*inWord.frac+corrFrac<<endl;
     return 1;
 
 }
