@@ -374,13 +374,13 @@ bool TopicDetecter::genTopicSet()
                     meanWordTmp+=wordSet[*iit];
                 }
 
-                if(isOk) cout<<"check ["<<i+1<<"th] topic : "<<endl;
+                if(isOk) cout<<"check ["<<i+1<<"th] topic : ";
                 isOk=isOk&&(meanWord[ih]==meanWordTmp);
                 meanWord[ih].clear();
                 meanWord[ih]=meanWordTmp;
 
             ih++;
-            cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" "<<endl;
+            cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
 
             //print out details of this topic during select topics
             for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
@@ -394,11 +394,12 @@ bool TopicDetecter::genTopicSet()
     }
 
     //print out details of this topic after select topics only based on 'count' 
+    cout<<" "<<endl;
     cout<<"!!! find topics !!! "<<endl;
     multimap<float,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
-        cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" "<<endl;
+        cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
             topicInf.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
@@ -476,7 +477,8 @@ bool TopicDetecter::genTopicSet()
 
         }
         //print out details of this topic after select topics based on 'wordScore' 
-        cout<<" ["<<i+1 <<"th] topic's keywords : "<<topicWord[i].size()<<endl;
+        cout<<" "<<endl;
+        cout<<" ["<<i+1 <<"th] topic's keywords : "<<topicWord[i].size();
         printTopicResult(topicWordScore);
 
         resultFile<<"keywords in the "<<i+1 <<"th topic finally : "<<topicWord[i].size()<<endl;
