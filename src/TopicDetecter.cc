@@ -853,7 +853,7 @@ void TopicDetecter::setResultFile()
     cout<<"rootFileName  : "<<rootFileName<<endl;
     resultFileName.assign(outFilePath);
     resultFileName+=infilestr;
-    resultFileName+="_Result.ldj";
+    resultFileName+="_Result.ldj.rot";
     cout<<"resultFileName  : "<<resultFileName<<endl;
 }
 bool TopicDetecter::normCount(WordInfo& inWord)
