@@ -764,8 +764,8 @@ bool TopicDetecter::genTopicSet()
             }
             //2. count of itself,treat count==1 as count ==2 to avoid ln(1)=0.
             //float wordCount=log(event.count==1?2:event.count);
-            //float wordCount=event.count/topicTotalCount[i];
-            float wordCount=event.count;
+            float wordCount=event.count/topicTotalCount[i];
+            //float wordCount=event.count;
 
             wordScore*=(wordCount*pInTopic);
 
