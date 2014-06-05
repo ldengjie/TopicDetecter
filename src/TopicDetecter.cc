@@ -269,9 +269,9 @@ bool TopicDetecter::genWordSet()
             corrInfVec.clear();
             //if(newWord.corrWord.size()!=0) 
             //{
-                wordSet.insert(make_pair(wordInfVec[0],newWord));
-                //cout<<"insert "<<++insertNum<<endl;
-                //}
+            wordSet.insert(make_pair(wordInfVec[0],newWord));
+            //cout<<"insert "<<++insertNum<<endl;
+            //}
             wordInfVec.clear();
             newWord.corrWord.clear();
         }
@@ -288,7 +288,7 @@ bool TopicDetecter::genTopicSet()
     //check wordSet file
     //
     //k topics initializing
-        gettimeofday( &startTime, NULL );
+    gettimeofday( &startTime, NULL );
     int wordTotalNum=(int)wordSet.size();
     int* wordNumEdge;
     wordNumEdge=(int*)malloc(sizeof(int)*(topicNum+1));
@@ -319,9 +319,9 @@ bool TopicDetecter::genTopicSet()
         }
         lineNum++;
     }
-        gettimeofday( &finishTime, NULL );
-        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
-        cout<<"Topics initilizing finished  (Used time : "<<timeInterval<<" s) ..."<<endl;
+    gettimeofday( &finishTime, NULL );
+    timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+    cout<<"Topics initilizing finished  (Used time : "<<timeInterval<<" s) ..."<<endl;
     cout<<"meanWord.size()  : "<<meanWord.size()<<endl;
     if( meanWord.size()!=(unsigned)topicNum )
     {
@@ -381,16 +381,16 @@ bool TopicDetecter::genTopicSet()
         for( int i=0 ; i<topicNum; i++ )
             //for( vector< vector<string> >::iterator it=topicWordVec.begin();it!=topicWordVec.end()  ; it++ )
         {
-                meanWordTmp.clear();
-                for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
-                {
+            meanWordTmp.clear();
+            for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
+            {
 
-                    meanWordTmp+=wordSet[*iit];
-                }
+                meanWordTmp+=wordSet[*iit];
+            }
 
-                isOk=isOk&&(meanWord[ih]==meanWordTmp);
-                meanWord[ih].clear();
-                meanWord[ih]=meanWordTmp;
+            isOk=isOk&&(meanWord[ih]==meanWordTmp);
+            meanWord[ih].clear();
+            meanWord[ih]=meanWordTmp;
 
             ih++;
             cout<<" ["<<okStr[isOk?1:0]<<" "<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
@@ -412,7 +412,7 @@ bool TopicDetecter::genTopicSet()
     //print out details of this topic after select topics only based on 'count' 
     cout<<" "<<endl;
     cout<<"!!! find topics !!! "<<endl;
-        gettimeofday( &finishTime, NULL );
+    gettimeofday( &finishTime, NULL );
     multimap<float,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
@@ -425,9 +425,9 @@ bool TopicDetecter::genTopicSet()
         topicInf.clear();
     }
 
-        gettimeofday( &finishTime, NULL );
-        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
-        cout<<"Finish listing out topics (Used time : "<<timeInterval<<" s) ..."<<endl;
+    gettimeofday( &finishTime, NULL );
+    timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+    cout<<"Finish listing out topics (Used time : "<<timeInterval<<" s) ..."<<endl;
     //select out key words for each topic
     //
     //generate user defined topics
@@ -437,8 +437,8 @@ bool TopicDetecter::genTopicSet()
 
 
     //calculate weight for each word
-        cout<<" "<<endl;
-        gettimeofday( &startTime, NULL );
+    cout<<" "<<endl;
+    gettimeofday( &startTime, NULL );
     multimap<float,string> topicWordScore;
     float wordScore=0.;
     float* topicTotalCount=(float*)calloc(topicNum,sizeof(float));
@@ -517,9 +517,9 @@ bool TopicDetecter::genTopicSet()
         topicWordScore.clear();
 
     }
-        gettimeofday( &finishTime, NULL );
-        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
-        cout<<"Finish calculating weight for each word (Used time : "<<timeInterval<<" s) ..."<<endl;
+    gettimeofday( &finishTime, NULL );
+    timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+    cout<<"Finish calculating weight for each word (Used time : "<<timeInterval<<" s) ..."<<endl;
     resultFile.close();
     //save into resultFile
     return 1;
