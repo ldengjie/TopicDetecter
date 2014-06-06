@@ -6,13 +6,11 @@ int main(int argc, char *argv[])// ./TopicDetecter ../data/liangHui_d_1.ldj
     if( argc==1 )
     {
         cout<<"Error : must need a input file ..."<<endl;
-        //return 0;
         exit(0);
     }
     if( argc>2 )
     {
         cout<<"Error : only need one input file ..."<<endl;
-        //return 0;
         exit(0);
     }
     string infileName=argv[1];
@@ -47,12 +45,9 @@ bool TopicDetecter::genWordSet()
         if( !infile )
         {
             cout<<"file doesn't exist"<<endl;
-            //return 1;
             exit(0);
         }
 
-        //vector<string> wordTmp;
-        //vector<int> wordPosTmp;
         int linesize;
         int wordStart=0;
         string term;
@@ -102,10 +97,6 @@ bool TopicDetecter::genWordSet()
                                 {
                                     continue;
                                 }
-                                //wordTmp.push_back(word);
-                                //wordPosTmp.push_back(wordPos);
-                                //cout<<"term  ["<<term<<"] -->";
-                                //cout<<" ["<<word<<"|"<<wordPro<<"|"<<wordPos<<"|"<<word.size()<<"]"<<endl;
 
                                 if( wordInfoInOneWeiBoSet.find(word)==wordInfoInOneWeiBoSet.end() )
                                 {
@@ -176,8 +167,6 @@ bool TopicDetecter::genWordSet()
             }
             wordStart=0;
             wordPos=0;
-            //wordTmp.clear();
-            //wordPosTmp.clear();
         }
         infile.close();
         //vector<string>().swap(wordTmp);
@@ -212,12 +201,11 @@ bool TopicDetecter::genWordSet()
         vector<string> _corrWord;
         vector<double> _corrCount;
         vector<double> _stepCount;
-        //vector< vector<int> >* _corrStep=0;
         vector<double> _corrAverage;
         vector<int> _corrTotalStep;
         vector<int> _corrStepSquare;
         vector<double> _corrSigma;
-        //
+
         t->Branch("id",&_id,"id/I");
         t->Branch("word",&_word);
         t->Branch("pro",&_pro);
@@ -299,7 +287,6 @@ bool TopicDetecter::genWordSet()
 
             }
             corrInfVec.clear();
-            //if(newWord.corrWord.size()!=0) wordSet.insert(make_pair(wordInfVec[0],newWord));
             _corrWord.clear();
             _corrCount.clear();
             _stepCount.clear();
@@ -345,14 +332,12 @@ bool TopicDetecter::genTopicSet()
     if( fo->IsZombie() )
     {
         cout<<" Error : can't open 'wordInfo.root' ... "<<endl;
-        //return 0;
         exit(0);
     }
     TTree* to=(TTree*)fo->Get("word");
     if( !to )
     {
         cout<<" Error : can't get tree 'Topic' ... "<<endl;
-        //return 0;
         exit(0);
     }
     int tnum=to->GetEntries();
@@ -367,7 +352,6 @@ bool TopicDetecter::genTopicSet()
     vector<string>* __corrWord=0;
     vector<double>* __corrCount=0;
     vector<double>* __stepCount=0;
-    //vector< vector<int> >* __corrStep=0;
     vector<double>* __corrAverage=0;
     vector<int>* __corrTotalStep=0;
     vector<int>* __corrStepSquare=0;
@@ -383,7 +367,6 @@ bool TopicDetecter::genTopicSet()
     to->SetBranchAddress("corrTotalStep",&__corrTotalStep);
     to->SetBranchAddress("corrStepSquare",&__corrStepSquare);
     to->SetBranchAddress("corrSigma",&__corrSigma);
-    //to->SetBranchAddress("corrStep",&__corrStep);
     //fill three histograms.
     float averageTmp=0.;
     float sigmaTmp=0.;
@@ -424,12 +407,6 @@ bool TopicDetecter::genTopicSet()
     float secondCount=0.;
     for( int i=0 ; i<tnum ; i++ )
     {
-        //__corrWord->clear();
-        //__corrCount->clear();
-        //__corrAverage->clear();
-        //__corrTotalStep->clear();
-        //__corrStepSquare->clear();
-        //__corrSigma->clear();
         //cout<<"i  : "<<i<<endl;
         to->GetEntry(i);
         rootIndex.insert(make_pair(*__word,__id));//create index for entry
@@ -447,19 +424,7 @@ bool TopicDetecter::genTopicSet()
         //cout<<"word  : "<<*__word<<endl;
         //cout<<"pro  : "<<*__pro<<endl;
         //}
-        //cout<<"id  : "<<__id<<endl;
-        //cout<<"word  : "<<*__word<<endl;
-        //cout<<"pro  : "<<*__pro<<endl;
-        //cout<<"count  : "<<__count<<endl;
-        //cout<<"__corrWord->size()     : "<<__corrWord->size()<<endl;
-        //cout<<"__corrAverage->size()  : "<<__corrAverage->size()<<endl;
-        //cout<<"__corrTotalStep->size()  : "<<__corrTotalStep->size()<<endl;
-        //cout<<"__corrStepSquare->size()  : "<<__corrStepSquare->size()<<endl;
-        ////cout<<"__corrSigma->size()    : "<<__corrSigma->size()<<endl;
-        //cout<<"__corrCount->size()    : "<<__corrCount->size()<<endl;
-        ////cout<<"__corrStep->size()     : "<<__corrStep->size()<<endl;
         WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-        //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
         normCount(event);
         for( map<string,CorrInfo>::iterator iit=event.corrWord.begin() ; iit!=event.corrWord.end() ; iit++ )
         {
@@ -530,7 +495,6 @@ bool TopicDetecter::genTopicSet()
         fracVsAverSliceY[i]->Write();
     }
 
-    //int yFirstBin=fracVsSigma->GetYaxis()->FindBin(-40);
     for( int i=0 ; i<20 ; i++ )
     {
 
@@ -545,11 +509,9 @@ bool TopicDetecter::genTopicSet()
     //fo->Close();
     //return 1;
 
-    //delete __corrStep;
-    //__corrStep=NULL;
 
     //k topics initializing
-        gettimeofday( &startTime, NULL );
+    gettimeofday( &startTime, NULL );
     int wordTotalNum=tnum;
     int* wordNumEdge;
     wordNumEdge=(int*)malloc(sizeof(int)*(topicNum+1));
@@ -563,15 +525,8 @@ bool TopicDetecter::genTopicSet()
     WordInfo meanWordTmp;
     for( int i=0 ; i<tnum ; i++ )
     {
-        //__corrWord->clear();
-        //__corrCount->clear();
-        //__corrAverage->clear();
-        //__corrTotalStep->clear();
-        //__corrSigma->clear();
-        //__corrStepSquare->clear();
         to->GetEntry(i);
         WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-        //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
         for( int i=0 ; i<topicNum ; i++ )
         {
             if( lineNum>=wordNumEdge[i]&& lineNum<wordNumEdge[i+1])
@@ -589,18 +544,16 @@ bool TopicDetecter::genTopicSet()
         lineNum++;
 
     }
-        gettimeofday( &finishTime, NULL );
-        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
-        cout<<"Topics initilizing finished  (Used time : "<<timeInterval<<" s) ..."<<endl;
+    gettimeofday( &finishTime, NULL );
+    timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+    cout<<"Topics initilizing finished  (Used time : "<<timeInterval<<" s) ..."<<endl;
     cout<<"meanWord.size()  : "<<meanWord.size()<<endl;
     if( meanWord.size()!=(unsigned)topicNum )
     {
         cout<<"Error : meanWord.size()!= "<<topicNum<<" ,please check it ..."<<endl;
-        //return 0;
         exit(0);
     }
     //loop for classifying topics
-    //vector< vector<string> > topicWordVec;
     vector<string> topicWord[topicNum];
     int minTopicNum=0;
     float maxDis;
@@ -623,7 +576,6 @@ bool TopicDetecter::genTopicSet()
         {
             to->GetEntry(i);
             WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
             maxDis=1000.;
             ic++;
 
@@ -653,22 +605,20 @@ bool TopicDetecter::genTopicSet()
         int ih=0;
         for( int i=0 ; i<topicNum; i++ )
         {
-                meanWordTmp.clear();
-                for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
-                {
+            meanWordTmp.clear();
+            for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
+            {
 
-                    //cout<<"get entry "<<endl;
-                    to->GetEntry(rootIndex[*iit]);
-                    //cout<<"obtain entry "<<endl;
-                    WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-                    //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
-                    meanWordTmp+=event;
-                }
+                //cout<<"get entry "<<endl;
+                to->GetEntry(rootIndex[*iit]);
+                //cout<<"obtain entry "<<endl;
+                WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
+                meanWordTmp+=event;
+            }
 
-                //if(isOk) cout<<"check ["<<i+1<<"th] topic : ";
-                isOk=isOk&&(meanWord[ih]==meanWordTmp);
-                meanWord[ih].clear();
-                meanWord[ih]=meanWordTmp;
+            isOk=isOk&&(meanWord[ih]==meanWordTmp);
+            meanWord[ih].clear();
+            meanWord[ih]=meanWordTmp;
 
             ih++;
             cout<<" ["<<okStr[isOk?1:0]<<" "<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
@@ -678,12 +628,10 @@ bool TopicDetecter::genTopicSet()
             {
                 to->GetEntry(rootIndex[topicWord[i][j]]);
                 WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-                //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
                 topicInfForTest.insert(make_pair(event.count,topicWord[i][j]));
             }
             printTopicResult(topicInfForTest);
             topicInfForTest.clear();
-            //topicWord[i].clear();
 
         }
         gettimeofday( &finishTime, NULL );
@@ -693,7 +641,7 @@ bool TopicDetecter::genTopicSet()
     //print out details of this topic after select topics only based on 'count' 
     cout<<" "<<endl;
     cout<<"!!! find topics !!! "<<endl;
-        gettimeofday( &finishTime, NULL );
+    gettimeofday( &finishTime, NULL );
     multimap<float,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
@@ -702,7 +650,6 @@ bool TopicDetecter::genTopicSet()
         {
             to->GetEntry(rootIndex[topicWord[i][j]]);
             WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
             topicInf.insert(make_pair((float)event.count,topicWord[i][j]));
         }
         //cout<<"count and word list  : ";
@@ -711,15 +658,15 @@ bool TopicDetecter::genTopicSet()
 
     }
 
-        gettimeofday( &finishTime, NULL );
-        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
-        cout<<"Finish listing out topics (Used time : "<<timeInterval<<" s) ..."<<endl;
+    gettimeofday( &finishTime, NULL );
+    timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+    cout<<"Finish listing out topics (Used time : "<<timeInterval<<" s) ..."<<endl;
     cout<<" "<<endl;
-        
+
     //select out key words for each topic
 
     //calculate weight for each word
-        gettimeofday( &startTime, NULL );
+    gettimeofday( &startTime, NULL );
     multimap<float,string> topicWordScore;
     float wordScore=0.;
     float* topicTotalCount=(float*)calloc(topicNum,sizeof(float));
@@ -732,14 +679,10 @@ bool TopicDetecter::genTopicSet()
         {
             to->GetEntry(rootIndex[topicWord[i][j]]);
             topicTotalCount[i]+=__count;
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
-            //topicInf.insert(make_pair(event.count,topicWord[i][j]));
         }
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
             to->GetEntry(rootIndex[topicWord[i][j]]);
-            //WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__corrTotalStep,*__corrStepSquare);
             WordInfo event(*__word,*__pro,__count,*__corrWord,*__corrCount,*__stepCount,*__corrTotalStep,*__corrStepSquare);
             float totalCorrCount=0.;
             float totalStepCount=0.;
@@ -762,7 +705,6 @@ bool TopicDetecter::genTopicSet()
                         //1.1 sigma of distance interval of correlative word
                         float stepSigma=sqrt((float)it->second.stepSquare/it->second.stepCount);
                         //1.2 correlative fraction of correlative word in correlative word list
-                        //float corrFrac=it->second.frac;
                         float corrFrac=it->second.corrCount/totalCorrCount;
                         pInTopic+=it->second.stepCount/totalStepCount;
                         //1.3 count fraction of correlative word in all words of this topic
@@ -807,9 +749,9 @@ bool TopicDetecter::genTopicSet()
 
     }
 
-        gettimeofday( &finishTime, NULL );
-        timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
-        cout<<"Finish calculating weight for each word (Used time : "<<timeInterval<<" s) ..."<<endl;
+    gettimeofday( &finishTime, NULL );
+    timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
+    cout<<"Finish calculating weight for each word (Used time : "<<timeInterval<<" s) ..."<<endl;
     resultFile.close();
     //generate user defined topics
 

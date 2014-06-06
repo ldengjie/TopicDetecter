@@ -6,10 +6,6 @@
 #include  <string>
 #include  <vector>
 #include  <stdlib.h> //atoi,string==>int
-//#ifndef __CINT__
-//#pragma link C++ class vector<vector<float> >;
-//#pragma link C++ class vector<float>+;
-//#endif
 #include  <malloc.h>//malloc,calloc
 #include  <map>
 #include  "TFile.h"
@@ -70,14 +66,12 @@ class TopicDetecter
             }
             WordInfo(){}
             WordInfo(string _word,string _pro,float _count,vector<string> _corrWord,vector<double> _corrCount,vector<double> _stepCount,vector<int> _corrTotalStep,vector<int> _corrStepSquare)
-            //WordInfo(string _word,string _pro,float _count,vector<string> _corrWord,vector<double> _corrCount,vector<int> _corrTotalStep,vector<int> _corrStepSquare)
             {
                 word.assign(_word);
                 pro.assign(_pro);
                 count=(float)_count;
                 frac=0.;
                 if( _corrWord.size()==_corrCount.size()&&_corrCount.size()==_corrTotalStep.size()&&_stepCount.size()==_corrTotalStep.size()&&_corrCount.size()==_corrStepSquare.size() )
-                //if( _corrWord.size()==_corrCount.size()&&_corrCount.size()==_corrTotalStep.size()&&_corrCount.size()==_corrStepSquare.size() )
                 {
                     for( unsigned int i=0 ;i<_corrWord.size()  ; i++ )
                     {
@@ -93,7 +87,6 @@ class TopicDetecter
                 }else
                 {
                     std::cout<<"corrWord,corrCount,stepCount,corrTotalStep 's size are not equal ,can't new a WordInfo  : "<<_corrWord.size()<<","<<_corrCount.size()<<","<<_stepCount.size()<<","<<_corrTotalStep.size()<<","<<_corrStepSquare.size()<<endl;
-                    //std::cout<<"corrWord,corrCount,corrTotalStep 's size are not equal ,can't new a WordInfo  : "<<_corrWord.size()<<","<<_corrCount.size()<<","<<_corrTotalStep.size()<<","<<_corrStepSquare.size()<<endl;
                 }
             }
             //calculate angle(distance) between two words,before it must do normCount()!!
@@ -127,13 +120,11 @@ class TopicDetecter
             }
 
             //plus two words,has no special topic's meaning, just for angle calculation
-            //friend WordInfo &operator +=(WordInfo &firstWord,WordInfo &secondWord) ;
             WordInfo& operator+=(const WordInfo& secondWord)
             {
                 if( word.empty() )
                 {
                     word.assign(secondWord.word);
-                    count=secondWord.count;
                     frac=0.;
                 }
                 for( map<string,CorrInfo>::const_iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
@@ -176,41 +167,6 @@ class TopicDetecter
                 ////normCount();
                 return *this;
             }
-            /*
-               friend WordInfo& operator+=(WordInfo& firstWord,WordInfo& secondWord)
-               {
-               if( firstWord.word.empty() )
-               {
-               firstWord.word.assign(secondWord.word);
-               }
-               for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
-               {
-               if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
-               {
-               firstWord.corrWord[iit->first].corrCount+=iit->second.corrCount;
-               }else if(iit->first==firstWord.word)
-               {
-               firstWord.count+=iit->second.corrCount; 
-               }
-               else
-               {
-               firstWord.corrWord.insert(make_pair(iit->first,iit->second));
-               }
-               }
-               if( firstWord.corrWord.find(secondWord.word)!=firstWord.corrWord.end() )
-               {
-               firstWord.corrWord[secondWord.word].corrCount+=secondWord.count;
-               }
-            ////normCount();
-            return firstWord;
-            }
-            */
-            //WordInfo operator=(WordInfo& secondWord)
-            //{
-            //WordInfo t;
-            //t.count=secondWord.count;
-            //return t;
-            //}
             friend bool operator ==(WordInfo& firstWord,WordInfo& secondWord)
             {
                 if( firstWord.corrWord.size()!=secondWord.corrWord.size() )
