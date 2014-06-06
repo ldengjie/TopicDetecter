@@ -8,8 +8,6 @@
 #include  <stdlib.h> //atoi,string==>int
 #include  <map>
 #include  <malloc.h>//malloc,calloc
-//#include  "TFile.h"
-//#include  "TTree.h"
 #include  "math.h"
 #include  <sys/time.h>//gettimeofday()
 
@@ -99,7 +97,6 @@ class TopicDetecter
                 if( word.empty() )
                 {
                     word.assign(secondWord.word);
-                    count=secondWord.count;
                     frac=0.;
                 }
                 for( map<string,CorrInfo>::const_iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
