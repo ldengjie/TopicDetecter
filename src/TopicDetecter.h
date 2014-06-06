@@ -8,8 +8,6 @@
 #include  <stdlib.h> //atoi,string==>int
 #include  <map>
 #include  <malloc.h>//malloc,calloc
-//#include  "TFile.h"
-//#include  "TTree.h"
 #include  "math.h"
 #include  <sys/time.h>//gettimeofday()
 
@@ -40,6 +38,24 @@ class TopicDetecter
             int totalStep;
             int stepSquare;
             //vector<int> distance;
+            bool clear()
+            {
+                corrCount=0.;
+                stepCount=0.;
+                frac=0.;
+                totalStep=0;
+                stepSquare=0;
+
+            }
+            CorrInfo()
+            {
+                corrCount=0.;
+                stepCount=0.;
+                frac=0.;
+                totalStep=0;
+                stepSquare=0;
+
+            }
         };
         CorrInfo _corrinfo;
         struct WordInfo
@@ -58,125 +74,41 @@ class TopicDetecter
                 frac=0.;
                 pro.clear();
                 word.clear();
-                corrWord.clear();
+                for( map<string,CorrInfo>::iterator it=corrWord.begin() ;it!=corrWord.end()  ; it++ )
+                {
+                    it->second.clear();
+                }
                 return 1;
             }
-            WordInfo(){}
-            //calculate angle(distance) between two words,before it must do normCount()!!
+            WordInfo()
+            {
+                count=0.;
+                frac=0.;
+            }
+
+            //calculate angle(distance) between words and mean word,and mean word must be at the second place,before it must do normCount()!!
             friend float operator -(WordInfo& firstWord,WordInfo& secondWord)
             {
                 float angle=0.;
-                for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
+                angle+=secondWord.corrWord[firstWord.word].frac*firstWord.frac;
+                for( map<string,CorrInfo>::iterator iit=firstWord.corrWord.begin() ; iit!=firstWord.corrWord.end() ; iit++ )
                 {
-                    if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
-                    {
-                        angle+=firstWord.corrWord[iit->first].frac*iit->second.frac;
-                    }
-                }
-                for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
-                {
-                    if( firstWord.word==iit->first )
-                    {
-                        angle+=iit->second.frac*firstWord.frac;
-                    }
-                }
-                if( firstWord.corrWord.find(secondWord.word)!=firstWord.corrWord.end())
-                {
-                    angle+=firstWord.corrWord[secondWord.word].frac*secondWord.frac;
-                }
-                if( firstWord.word==secondWord.word )
-                {
-                    angle+=secondWord.frac*firstWord.frac;
+                    angle+=secondWord.corrWord[iit->first].frac*iit->second.frac;
                 }
                 angle=(float)acos(angle);
                 return angle;
             }
 
-            //plus two words,has no special topic's meaning, just for angle calculation
-            //friend WordInfo &operator +=(WordInfo &firstWord,WordInfo &secondWord) ;
+            //plus two words,has no special topic's meaning, just for angle calculation,just for mean word be plused by a word
             WordInfo& operator+=(const WordInfo& secondWord)
             {
-                if( word.empty() )
-                {
-                    word.assign(secondWord.word);
-                    count=secondWord.count;
-                    frac=0.;
-                }
                 for( map<string,CorrInfo>::const_iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
-                    if( corrWord.find(iit->first)!=corrWord.end() )
-                    {
-                        corrWord[iit->first].corrCount+=iit->second.corrCount;
-                    }
-                    else if(word==iit->first)
-                    {
-                        count+=iit->second.corrCount; 
-                    }
-                    else
-                    {
-                        CorrInfo secondWordTmp;
-                        secondWordTmp.corrCount=iit->second.corrCount;
-                        secondWordTmp.stepCount=0.;
-                        secondWordTmp.totalStep=0;
-                        secondWordTmp.stepSquare=0;
-                        secondWordTmp.frac=0.;
-                        corrWord.insert(make_pair(iit->first,secondWordTmp));
-                    }
+                    corrWord[iit->first].corrCount+=iit->second.corrCount;
                 }
-                if( corrWord.find(secondWord.word)!=corrWord.end() )
-                {
-                    corrWord[secondWord.word].corrCount+=secondWord.count;
-                }else if(word==secondWord.word)
-                {
-                    count+=secondWord.count;
-                }else
-                {
-                    CorrInfo secondWordTmp;
-                    secondWordTmp.corrCount=secondWord.count;
-                    secondWordTmp.stepCount=0.;
-                    secondWordTmp.totalStep=0;
-                    secondWordTmp.stepSquare=0;
-                    secondWordTmp.frac=0.;
-                    corrWord.insert(make_pair(secondWord.word,secondWordTmp));
-                }
-                ////normCount();
+                corrWord[secondWord.word].corrCount+=secondWord.count;
                 return *this;
             }
-            /*
-               friend WordInfo& operator+=(WordInfo& firstWord,WordInfo& secondWord)
-               {
-               if( firstWord.word.empty() )
-               {
-               firstWord.word.assign(secondWord.word);
-               }
-               for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
-               {
-               if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
-               {
-               firstWord.corrWord[iit->first].corrCount+=iit->second.corrCount;
-               }else if(iit->first==firstWord.word)
-               {
-               firstWord.count+=iit->second.corrCount; 
-               }
-               else
-               {
-               firstWord.corrWord.insert(make_pair(iit->first,iit->second));
-               }
-               }
-               if( firstWord.corrWord.find(secondWord.word)!=firstWord.corrWord.end() )
-               {
-               firstWord.corrWord[secondWord.word].corrCount+=secondWord.count;
-               }
-            ////normCount();
-            return firstWord;
-            }
-            */
-            //WordInfo operator=(WordInfo& secondWord)
-            //{
-            //WordInfo t;
-            //t.count=secondWord.count;
-            //return t;
-            //}
             friend bool operator ==(WordInfo& firstWord,WordInfo& secondWord)
             {
                 if( firstWord.corrWord.size()!=secondWord.corrWord.size() )
@@ -184,49 +116,16 @@ class TopicDetecter
                     //cout<<"firstWord.corrWord.size()!=secondWord.corrWord.size() : "<<firstWord.corrWord.size()<<"!="<<secondWord.corrWord.size()<<endl;
                     return 0;
                 }
+
                 for( map<string,CorrInfo>::iterator iit=secondWord.corrWord.begin() ; iit!=secondWord.corrWord.end() ; iit++ )
                 {
-                    if( firstWord.corrWord.find(iit->first)!=firstWord.corrWord.end() )
+                    if(iit->second.corrCount!=firstWord.corrWord[iit->first].corrCount)
                     {
-                        if( firstWord.corrWord[iit->first].corrCount!=iit->second.corrCount )
-                        {
-                            //cout<<"firstWord.corrWord[iit->first].corrCount!=iit->second.corrCount : "<<iit->first<<" "<<firstWord.corrWord[iit->first].corrCount<<"!="<<iit->second.corrCount<<endl;
-                            return 0;
-                        }
-                    }else if(firstWord.word==iit->first)
-                    {
-                        if( firstWord.count!=iit->second.corrCount )
-                        {
-                            //cout<<"firstWord.count!=iit->second.corrCount : "<<iit->first<<" "<<firstWord.count<<"!="<<iit->second.corrCount<<endl;
-                            return 0;
-                        }
-                    }else
-                    {
-                        //cout<<"Cant't find ["<<iit->first<<"] in firstword"<<endl;
+                        //cout<<"iit->second.corrCount!=firstWord.corrWord[iit->first].corrCount: "<<iit->first<<" "<<iit->second.corrCount<<"!="<<firstWord.corrWord[iit->first].corrCount<<endl;
                         return 0;
+
                     }
                 }
-                if( firstWord.corrWord.find(secondWord.word)!=firstWord.corrWord.end() )
-                {
-                    if( secondWord.count!=firstWord.corrWord[secondWord.word].corrCount )
-                    {
-                        //cout<<"secondWord.count!=firstWord.corrWord[secondWord.word].corrCount : "<<secondWord.word<<" "<<secondWord.count<<"!="<<firstWord.corrWord[secondWord.word].corrCount<<endl;
-                        return 0;
-                    }
-
-                }else if(firstWord.word==secondWord.word)
-                {
-                    if( firstWord.count!=secondWord.count )
-                    {
-                        //cout<<"firstWord.count!=secondWord.count : "<<secondWord.word<<" "<<firstWord.count<<"!="<<secondWord.count<<endl;
-                        return 0;
-                    }
-                }else
-                {
-                    //cout<<"Cant't find ["<<secondWord.word<<"] in firstword"<<endl;
-                    return 0;
-                }
-
                 //cout<<" OK ! "<<endl;
                 return 1; 
             }

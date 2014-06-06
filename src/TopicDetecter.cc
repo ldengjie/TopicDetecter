@@ -139,8 +139,8 @@ bool TopicDetecter::genWordSet()
                         {
                             if( wordSet[it->first].corrWord.find(iit->first)==wordSet[it->first].corrWord.end() )
                             {
-                                _corrinfo.corrCount=0.;
-                                _corrinfo.stepCount=0.;
+                                //_corrinfo.corrCount=0.;
+                                //_corrinfo.stepCount=0.;
                                 wordSet[it->first].corrWord.insert(make_pair(iit->first,_corrinfo));
                             } 
                             wordSet[it->first].corrWord[iit->first].corrCount+=iit->second.count;
@@ -300,6 +300,13 @@ bool TopicDetecter::genTopicSet()
     int lineNum=0;
     vector<WordInfo> meanWord;
     WordInfo meanWordTmp;
+    //mean word has no main word,just correlative words,here is "meanWordTmp.corrWord",while meanWordTmp.word is empty
+    for( map<string,WordInfo>::iterator it=wordSet.begin() ; it!=wordSet.end() ; it++ )
+    {
+
+        CorrInfo corrWordTmp;
+        meanWordTmp.corrWord.insert(make_pair(it->first,corrWordTmp));
+    }
     for( map<string,WordInfo>::iterator it=wordSet.begin() ; it!=wordSet.end() ; it++ )
     {
         for( int i=0 ; i<topicNum ; i++ )
@@ -311,7 +318,7 @@ bool TopicDetecter::genTopicSet()
                 {
                     cout<<"lineNum  : "<<lineNum<<endl;
                     meanWord.push_back(meanWordTmp);
-                    //cout<<"meanWordTmp.corrWord.size()  : "<<meanWordTmp.corrWord.size()<<endl;
+
                     meanWordTmp.clear();
                 }
                 break;
@@ -349,6 +356,17 @@ bool TopicDetecter::genTopicSet()
             //cout<<"meanWord.corrWord.size()  : "<<meanWord[i].corrWord.size()<<endl;
             topicWord[i].clear();
             normCount(meanWord[i]);
+            //int numC=0;
+            ////cout<<meanWord[i].word<<"  : "<<meanWord[i].count<<" "<<meanWord[i].frac<<endl;
+            //for( map<string,CorrInfo>::iterator iit=meanWord[i].corrWord.begin() ; iit!=meanWord[i].corrWord.end() ; iit++ )
+            //{   
+            //if( iit->second.corrCount!=0 )
+            //{   
+            //numC++;
+            //cout<<iit->first<<"  : "<<iit->second.corrCount<<" "<<iit->second.frac<<endl;
+            //}   
+            //}   
+            //cout<<"meanWord["<<i<<"].corrWord.size()  : "<<meanWord[i].corrWord.size()<<"|"<<numC<<endl;
         }
         int ic=0;
         for( map<string,WordInfo>::iterator it=wordSet.begin() ; it!=wordSet.end() ; it++ )
@@ -356,7 +374,7 @@ bool TopicDetecter::genTopicSet()
             normCount(it->second);
             maxDis=1000.;
             ic++;
-            //cout<<"["<<it->second.corrWord.size() <<"]dis : ";
+            //cout<<"["<<it->first<<"|"<<it->second.corrWord.size() <<"]dis : ";
             for( int i=0 ; i<topicNum; i++ )
             {
                 dis=it->second-meanWord[i];// must do normCount() at first 
@@ -453,7 +471,7 @@ bool TopicDetecter::genTopicSet()
         }
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
-            WordInfo event=wordSet[topicWord[i][j]];
+            WordInfo &event=wordSet[topicWord[i][j]];
             float totalCorrCount=0.;
             float totalStepCount=0.;
             for( map<string,CorrInfo>::iterator it=event.corrWord.begin() ; it!=event.corrWord.end() ; it++ )
@@ -559,7 +577,12 @@ void TopicDetecter::setResultFile()
 bool TopicDetecter::normCount(WordInfo& inWord)
 {
     //calculate total counts
-    if( inWord.frac!=0. )
+    //if( inWord.frac!=0. )
+    if( inWord.corrWord.size()!=0&&inWord.corrWord.begin()->second.frac!=0. )
+    {
+        return 1;
+    }
+    if(inWord.corrWord.size()==0&&inWord.frac!=0.)
     {
         return 1;
     }
