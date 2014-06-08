@@ -37,7 +37,6 @@ class TopicDetecter
             float frac;
             int totalStep;
             int stepSquare;
-            //vector<int> distance;
             bool clear()
             {
                 corrCount=0.;
@@ -62,16 +61,17 @@ class TopicDetecter
         {
             float count;//number of word
             float frac;
+            int rank;
             string pro;
             string word;
             map<string,CorrInfo> corrWord;
-            //map<string,CorrInfo> corrTopic;
             //vector<float> weiboTime;
             //bool weiboLock;
             bool clear()
             {
                 count=0.;
                 frac=0.;
+                rank=0;
                 pro.clear();
                 word.clear();
                 for( map<string,CorrInfo>::iterator it=corrWord.begin() ;it!=corrWord.end()  ; it++ )
@@ -84,6 +84,7 @@ class TopicDetecter
             {
                 count=0.;
                 frac=0.;
+                rank=0;
             }
 
             //calculate angle(distance) between words and mean word,and mean word must be at the second place,before it must do normCount()!!
@@ -126,7 +127,6 @@ class TopicDetecter
 
                     }
                 }
-                //cout<<" OK ! "<<endl;
                 return 1; 
             }
         };
@@ -137,7 +137,6 @@ class TopicDetecter
             int topicLevel;
             vector<string> keyWord;
             vector<string> nextLevelTopic;
-
             //vector<float> weiboTime;
         };
 
@@ -176,8 +175,6 @@ class TopicDetecter
             _topic.basePath=_topicBasePath;
             topicUserDef.push_back(_topic);
         }
-        //map<string,WordInfo> genWordSet();
-        //map<string,TopicInfo> genTopicSet();
         bool genWordSet();
         bool genTopicSet();
 

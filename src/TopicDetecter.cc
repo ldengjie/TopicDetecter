@@ -6,19 +6,17 @@ int main(int argc, char *argv[])// ./TopicDetecter ../data/liangHui_d_1.ldj
     if( argc==1 )
     {
         cout<<"Error : must need a input file ..."<<endl;
-        //return 0;
         exit(0);
     }
     if( argc>2 )
     {
         cout<<"Error : only need one input file ..."<<endl;
-        //return 0;
         exit(0);
     }
     string infileName=argv[1];
 
     //new class
-    TopicDetecter* t1=new TopicDetecter(infileName,7);
+    TopicDetecter* t1=new TopicDetecter(infileName,12);
     //generate wordSet, if *WordSet.ldj does not exist,create it 
     t1->genWordSet();
 
@@ -45,12 +43,9 @@ bool TopicDetecter::genWordSet()
         if( !infile )
         {
             cout<<"file doesn't exist"<<endl;
-            //return 1;
             exit(0);
         }
 
-        //vector<string> wordTmp;
-        //vector<int> wordPosTmp;
         int linesize;
         int wordStart=0;
         string term;
@@ -100,10 +95,6 @@ bool TopicDetecter::genWordSet()
                                 {
                                     continue;
                                 }
-                                //wordTmp.push_back(word);
-                                //wordPosTmp.push_back(wordPos);
-                                //cout<<"term  ["<<term<<"] -->";
-                                //cout<<" ["<<word<<"|"<<wordPro<<"|"<<wordPos<<"|"<<word.size()<<"]"<<endl;
 
                                 if( wordInfoInOneWeiBoSet.find(word)==wordInfoInOneWeiBoSet.end() )
                                 {
@@ -139,8 +130,6 @@ bool TopicDetecter::genWordSet()
                         {
                             if( wordSet[it->first].corrWord.find(iit->first)==wordSet[it->first].corrWord.end() )
                             {
-                                //_corrinfo.corrCount=0.;
-                                //_corrinfo.stepCount=0.;
                                 wordSet[it->first].corrWord.insert(make_pair(iit->first,_corrinfo));
                             } 
                             wordSet[it->first].corrWord[iit->first].corrCount+=iit->second.count;
@@ -174,12 +163,8 @@ bool TopicDetecter::genWordSet()
             }
             wordStart=0;
             wordPos=0;
-            //wordTmp.clear();
-            //wordPosTmp.clear();
         }
         infile.close();
-        //vector<string>().swap(wordTmp);
-        //vector<int>().swap(wordPosTmp);
         //new wordSet file
         ofstream wordSetSaveFile;
         wordSetSaveFile.open(wordSetFileName.c_str());
@@ -210,7 +195,6 @@ bool TopicDetecter::genWordSet()
         string corrInfTag=";";
         string corrWordInfTag=",";
         lineNum=0;
-        //int insertNum=0;
         while( getline(wordSetFile,wordSetLine) )
         {
             bpos=0;
@@ -267,11 +251,7 @@ bool TopicDetecter::genWordSet()
                 corrWordInfVec.clear();
             }
             corrInfVec.clear();
-            //if(newWord.corrWord.size()!=0) 
-            //{
             wordSet.insert(make_pair(wordInfVec[0],newWord));
-            //cout<<"insert "<<++insertNum<<endl;
-            //}
             wordInfVec.clear();
             newWord.corrWord.clear();
         }
@@ -286,7 +266,6 @@ bool TopicDetecter::genWordSet()
 bool TopicDetecter::genTopicSet()
 {
     //check wordSet file
-    //
     //k topics initializing
     gettimeofday( &startTime, NULL );
     int wordTotalNum=(int)wordSet.size();
@@ -333,12 +312,12 @@ bool TopicDetecter::genTopicSet()
     if( meanWord.size()!=(unsigned)topicNum )
     {
         cout<<"Error : meanWord.size()!= "<<topicNum<<" ,please check it ..."<<endl;
-        //return 0;
         exit(0);
     }
     //loop for classifying topics
-    //vector< vector<string> > topicWordVec;
     vector<string> topicWord[topicNum];
+    map<string,int> topicWordMapForBool[topicNum];
+    
     int minTopicNum=0;
     float maxDis;
     float dis=0.;
@@ -356,17 +335,6 @@ bool TopicDetecter::genTopicSet()
             //cout<<"meanWord.corrWord.size()  : "<<meanWord[i].corrWord.size()<<endl;
             topicWord[i].clear();
             normCount(meanWord[i]);
-            //int numC=0;
-            ////cout<<meanWord[i].word<<"  : "<<meanWord[i].count<<" "<<meanWord[i].frac<<endl;
-            //for( map<string,CorrInfo>::iterator iit=meanWord[i].corrWord.begin() ; iit!=meanWord[i].corrWord.end() ; iit++ )
-            //{   
-            //if( iit->second.corrCount!=0 )
-            //{   
-            //numC++;
-            //cout<<iit->first<<"  : "<<iit->second.corrCount<<" "<<iit->second.frac<<endl;
-            //}   
-            //}   
-            //cout<<"meanWord["<<i<<"].corrWord.size()  : "<<meanWord[i].corrWord.size()<<"|"<<numC<<endl;
         }
         int ic=0;
         for( map<string,WordInfo>::iterator it=wordSet.begin() ; it!=wordSet.end() ; it++ )
@@ -387,7 +355,6 @@ bool TopicDetecter::genTopicSet()
 
             }
             //cout<<endl;
-            //cout<<"minTopicNum  : "<<minTopicNum<<endl;
             topicWord[minTopicNum].push_back(it->first);
         }
         gettimeofday( &finishTime, NULL );
@@ -395,9 +362,7 @@ bool TopicDetecter::genTopicSet()
         cout<<"finished a loop (Used time : "<<timeInterval<<" s), then check isOk ..."<<endl;
         gettimeofday( &startTime, NULL );
         isOk=1;
-        int ih=0;
         for( int i=0 ; i<topicNum; i++ )
-            //for( vector< vector<string> >::iterator it=topicWordVec.begin();it!=topicWordVec.end()  ; it++ )
         {
             meanWordTmp.clear();
             for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
@@ -406,11 +371,10 @@ bool TopicDetecter::genTopicSet()
                 meanWordTmp+=wordSet[*iit];
             }
 
-            isOk=isOk&&(meanWord[ih]==meanWordTmp);
-            meanWord[ih].clear();
-            meanWord[ih]=meanWordTmp;
+            isOk=isOk&&(meanWord[i]==meanWordTmp);
+            meanWord[i].clear();
+            meanWord[i]=meanWordTmp;
 
-            ih++;
             cout<<" ["<<okStr[isOk?1:0]<<" "<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
 
             //print out details of this topic during select topics
@@ -427,10 +391,22 @@ bool TopicDetecter::genTopicSet()
 
     }
 
+    for( map<string,WordInfo>::iterator it=wordSet.begin() ; it!=wordSet.end() ; it++ )
+    {
+        for( int i=0 ; i<topicNum ; i++ )
+        {
+            topicWordMapForBool[i].insert(make_pair(it->first,0));
+        }
+        
+    }
     //print out details of this topic after select topics only based on 'count' 
     cout<<" "<<endl;
     cout<<"!!! find topics !!! "<<endl;
     gettimeofday( &finishTime, NULL );
+    ofstream resultFile;
+    resultFile.open(resultFileName.c_str());
+    char coutStr[100];
+    resultFile<<"ordered by count ; ordered by wordstore "<<endl;
     multimap<float,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
@@ -440,6 +416,29 @@ bool TopicDetecter::genTopicSet()
             topicInf.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
         }
         printTopicResult(topicInf);
+        resultFile<<endl;
+        resultFile<<" ["<<i+1 <<"th] topic (ordered by count): "<<topicWord[i].size()<<" "<<endl;
+                sprintf(coutStr," %19s %6s ","Word","Count");
+                resultFile<<coutStr<<endl;
+        int rankNum=0;
+        float countTag=0.;
+        if( !topicInf.empty() )
+        {
+            multimap<float,string>::iterator it=topicInf.end() ;
+            it--;
+            for( ; it!=topicInf.begin(); it-- )
+            {
+                float countTmp=wordSet[it->second].count;
+                if( countTmp!=countTag )
+                {
+                    rankNum++;
+                    countTag=countTmp;
+                }
+                wordSet[it->second].rank=rankNum;
+                sprintf(coutStr," %21s %6.0f ",it->second.c_str(),it->first);
+                resultFile<<coutStr<<endl;
+            }
+        }
         topicInf.clear();
     }
 
@@ -447,7 +446,6 @@ bool TopicDetecter::genTopicSet()
     timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
     cout<<"Finish listing out topics (Used time : "<<timeInterval<<" s) ..."<<endl;
     //select out key words for each topic
-    //
     //generate user defined topics
 
 
@@ -460,14 +458,13 @@ bool TopicDetecter::genTopicSet()
     multimap<float,string> topicWordScore;
     float wordScore=0.;
     float* topicTotalCount=(float*)calloc(topicNum,sizeof(float));
-    ofstream resultFile;
-    resultFile.open(resultFileName.c_str());
     for( int i=0 ; i<topicNum ; i++ )
     {
         //calculate total word count in each topic
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
             topicTotalCount[i]+=wordSet[topicWord[i][j]].count;
+            topicWordMapForBool[i][topicWord[i][j]]=1;
         }
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
@@ -480,16 +477,13 @@ bool TopicDetecter::genTopicSet()
                 totalStepCount+=it->second.stepCount;
             }
             totalCorrCount+=event.count;
-            //normCount(event);//calculate corrFrac in each corrWord for 1.2
-            int vectorIndex=0;
             //0. possibility belong to this topic
             float pInTopic=0.;
             for( map<string,CorrInfo>::iterator it=event.corrWord.begin() ; it!=event.corrWord.end() ; it++ )
             {
-                for( unsigned int k=0 ; k<topicWord[i].size() ; k++ )
+                if( topicWordMapForBool[i][it->first] )
                 {
-                    if( topicWord[i][k]==it->first )
-                    {
+                    
                         //1.1 sigma of distance interval of correlative word
                         float stepSigma=sqrt((float)it->second.stepSquare/it->second.stepCount); 
                         //1.2 correlative fraction of correlative word in correlative word list
@@ -500,12 +494,8 @@ bool TopicDetecter::genTopicSet()
                         float countFrac=wordSet[it->first].count/topicTotalCount[i];
                         wordScore+=countFrac*corrFrac/stepSigma;
                         //if(j>(int)topicWord[i].size()-2)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<"))"<<endl;
-                        break;
 
-                    }
                 }
-
-                vectorIndex++;
             }
             //2. count of itself,treat count==1 as count ==2 to avoid ln(1)=0.
             //float wordCount=log(event.count==1?2:event.count);
@@ -522,16 +512,21 @@ bool TopicDetecter::genTopicSet()
         cout<<" ["<<i+1 <<"th] topic's keywords : "<<topicWord[i].size();
         printTopicResult(topicWordScore);
 
-        resultFile<<"keywords in the "<<i+1 <<"th topic finally : "<<topicWord[i].size()<<endl;
+        resultFile<<endl;
+        resultFile<<"keywords in the "<<i+1 <<"th topic finally (ordered by wordstore): "<<topicWord[i].size()<<endl;
+                sprintf(coutStr," %6s %19s %15s %6s %6s","Rank","Word","Store","Count","Count Ranking");
+                resultFile<<coutStr<<endl;
+                int storeRankNum=1;
         if( !topicWordScore.empty() )
         {
-            for( multimap<float,string>::iterator it=topicWordScore.begin() ; it!=topicWordScore.end() ; it++ )
+            multimap<float,string>::iterator it=topicWordScore.end() ;
+            it--;
+            for( ; it!=topicWordScore.begin(); it-- )
             {
-                resultFile<<" "<<it->second<<" "<<it->first<<" ;";
+                sprintf(coutStr," %6d %21s %15e %6.0f %6d",storeRankNum++,it->second.c_str(),it->first,wordSet[it->second].count,wordSet[it->second].rank);
+                resultFile<<coutStr<<endl;
             }
-            resultFile<<endl;
         }
-
         topicWordScore.clear();
 
     }
@@ -569,15 +564,15 @@ void TopicDetecter::setResultFile()
     wordSetFileName+="_WordSet.ldj";
     cout<<"wordSetFileName: "<<wordSetFileName<<endl;
     resultFileName.assign(outFilePath);
-    resultFileName+=infilestr;
-    resultFileName+="_Result.ldj";
+    char nameStr[100];
+    sprintf(nameStr,"%s_Result_%d.ldj",infilestr.c_str(),topicNum);
+    resultFileName+=nameStr;
     cout<<"resultFileName  : "<<resultFileName<<endl;
 }
 
 bool TopicDetecter::normCount(WordInfo& inWord)
 {
     //calculate total counts
-    //if( inWord.frac!=0. )
     if( inWord.corrWord.size()!=0&&inWord.corrWord.begin()->second.frac!=0. )
     {
         return 1;
@@ -598,10 +593,8 @@ bool TopicDetecter::normCount(WordInfo& inWord)
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
         iit->second.frac=iit->second.corrCount/sqrt(totalCorrCount2);
-        //cout<<"iit->second.frac  : "<<iit->second.frac<<endl;
         corrFrac+=(iit->second.frac)*(iit->second.frac);
     }
-    //cout<<"inWord.frac  : "<<inWord.frac*inWord.frac<<" , corrFrac  : "<<corrFrac<<" , inWord.frac+corrFrac = "<<inWord.frac*inWord.frac+corrFrac<<endl;
     return 1;
 
 }
