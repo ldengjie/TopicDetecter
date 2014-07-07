@@ -1,8 +1,11 @@
 #include    "TopicDetecter.h"
 
-int main(int argc, char *argv[])// ./TopicDetecter ../data/liangHui_d_1.ldj
+int main(int argc, char *argv[])// ./TopicDetecter ../data/lianghui/liangHui_d_1.ldj
 {
     //test
+    struct timeval allStartTime,allFinishTime;
+    double timeInterval=0.;
+    gettimeofday( &allStartTime, NULL );
     if( argc==1 )
     {
         cout<<"Error : must need a input file ..."<<endl;
@@ -25,6 +28,9 @@ int main(int argc, char *argv[])// ./TopicDetecter ../data/liangHui_d_1.ldj
     //delete class
     delete t1;
     t1=NULL;
+    gettimeofday( &allFinishTime, NULL );
+    timeInterval=allFinishTime.tv_sec-allStartTime.tv_sec+(allFinishTime.tv_usec-allStartTime.tv_usec)/1000000.;
+    cout<<"All done !!! (Used time : "<<timeInterval<<" s = "<<(int)timeInterval/3600<<"h"<<(int)timeInterval%3600/60 <<"min"<<(int)timeInterval%3600%60 <<"s) ..."<<endl;
     return 1;
 }
 
@@ -55,7 +61,7 @@ bool TopicDetecter::genWordSet()
         string proTag="/";
         int proPos;
         int wordPos=0;
-        string proShield="wyueopb";
+        string proShield="dchkrmxwyueopb";
 
         //loop all weibos 
         while( getline(infile,line) )
@@ -200,7 +206,7 @@ bool TopicDetecter::genWordSet()
             bpos=0;
             epos=0;
             lineNum++;
-            //if(lineNum%1000==0) cout<<" lineNum  : "<<lineNum<<endl;
+            if(lineNum%1000==0) cout<<" lineNum  : "<<lineNum<<endl;
             //cout<<" lineNum  : "<<lineNum<<endl;
             while( wordSetLine.find(wordInfTag,bpos)!=string::npos )
             {
@@ -317,7 +323,7 @@ bool TopicDetecter::genTopicSet()
     //loop for classifying topics
     vector<string> topicWord[topicNum];
     map<string,int> topicWordMapForBool[topicNum];
-    
+
     int minTopicNum=0;
     float maxDis;
     float dis=0.;
@@ -397,7 +403,7 @@ bool TopicDetecter::genTopicSet()
         {
             topicWordMapForBool[i].insert(make_pair(it->first,0));
         }
-        
+
     }
     //print out details of this topic after select topics only based on 'count' 
     cout<<" "<<endl;
@@ -418,8 +424,8 @@ bool TopicDetecter::genTopicSet()
         printTopicResult(topicInf);
         resultFile<<endl;
         resultFile<<" ["<<i+1 <<"th] topic (ordered by count): "<<topicWord[i].size()<<" "<<endl;
-                sprintf(coutStr," %19s %6s ","Word","Count");
-                resultFile<<coutStr<<endl;
+        sprintf(coutStr," %19s %6s ","Word","Count");
+        resultFile<<coutStr<<endl;
         int rankNum=0;
         float countTag=0.;
         if( !topicInf.empty() )
@@ -483,17 +489,17 @@ bool TopicDetecter::genTopicSet()
             {
                 if( topicWordMapForBool[i][it->first] )
                 {
-                    
-                        //1.1 sigma of distance interval of correlative word
-                        float stepSigma=sqrt((float)it->second.stepSquare/it->second.stepCount); 
-                        //1.2 correlative fraction of correlative word in correlative word list
-                        //float corrFrac=it->second.frac;
-                        float corrFrac=it->second.corrCount/totalCorrCount;
-                        pInTopic+=it->second.stepCount/totalStepCount;
-                        //1.3 count fraction of correlative word in all words of this topic
-                        float countFrac=wordSet[it->first].count/topicTotalCount[i];
-                        wordScore+=countFrac*corrFrac/stepSigma;
-                        //if(j>(int)topicWord[i].size()-2)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<"))"<<endl;
+
+                    //1.1 sigma of distance interval of correlative word
+                    float stepSigma=sqrt((float)it->second.stepSquare/it->second.stepCount); 
+                    //1.2 correlative fraction of correlative word in correlative word list
+                    //float corrFrac=it->second.frac;
+                    float corrFrac=it->second.corrCount/totalCorrCount;
+                    pInTopic+=it->second.stepCount/totalStepCount;
+                    //1.3 count fraction of correlative word in all words of this topic
+                    float countFrac=wordSet[it->first].count/topicTotalCount[i];
+                    wordScore+=countFrac*corrFrac/stepSigma;
+                    //if(j>(int)topicWord[i].size()-2)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<"))"<<endl;
 
                 }
             }
@@ -514,9 +520,9 @@ bool TopicDetecter::genTopicSet()
 
         resultFile<<endl;
         resultFile<<"keywords in the "<<i+1 <<"th topic finally (ordered by wordstore): "<<topicWord[i].size()<<endl;
-                sprintf(coutStr," %6s %19s %15s %6s %6s","Rank","Word","Store","Count","Count Ranking");
-                resultFile<<coutStr<<endl;
-                int storeRankNum=1;
+        sprintf(coutStr," %6s %19s %15s %6s %6s","Rank","Word","Store","Count","Count Ranking");
+        resultFile<<coutStr<<endl;
+        int storeRankNum=1;
         if( !topicWordScore.empty() )
         {
             multimap<float,string>::iterator it=topicWordScore.end() ;
