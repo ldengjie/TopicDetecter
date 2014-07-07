@@ -26,15 +26,15 @@ class TopicDetecter
         };
         struct wordInfoInOneWeiBo
         {
-            float count;
+            double count;
             string pro;
             vector<int> pos;
         };
         struct CorrInfo
         {
-            float corrCount;
-            float stepCount;
-            float frac;
+            double corrCount;
+            double stepCount;
+            double frac;
             int totalStep;
             int stepSquare;
             bool clear()
@@ -59,13 +59,13 @@ class TopicDetecter
         CorrInfo _corrinfo;
         struct WordInfo
         {
-            float count;//number of word
-            float frac;
+            double count;//number of word
+            double frac;
             int rank;
             string pro;
             string word;
             map<string,CorrInfo> corrWord;
-            //vector<float> weiboTime;
+            //vector<double> weiboTime;
             //bool weiboLock;
             bool clear()
             {
@@ -88,15 +88,15 @@ class TopicDetecter
             }
 
             //calculate angle(distance) between words and mean word,and mean word must be at the second place,before it must do normCount()!!
-            friend float operator -(WordInfo& firstWord,WordInfo& secondWord)
+            friend double operator -(WordInfo& firstWord,WordInfo& secondWord)
             {
-                float angle=0.;
+                double angle=0.;
                 angle+=secondWord.corrWord[firstWord.word].frac*firstWord.frac;
                 for( map<string,CorrInfo>::iterator iit=firstWord.corrWord.begin() ; iit!=firstWord.corrWord.end() ; iit++ )
                 {
                     angle+=secondWord.corrWord[iit->first].frac*iit->second.frac;
                 }
-                angle=(float)acos(angle);
+                angle=(double)acos(angle);
                 return angle;
             }
 
@@ -133,11 +133,11 @@ class TopicDetecter
         WordInfo newWord;
         struct TopicInfo
         {
-            float count;
+            double count;
             int topicLevel;
             vector<string> keyWord;
             vector<string> nextLevelTopic;
-            //vector<float> weiboTime;
+            //vector<double> weiboTime;
         };
 
         TopicDetecter(string _infileName,int _topicNum)
@@ -161,7 +161,7 @@ class TopicDetecter
         void setTopicNum(int _topicNum){topicNum=_topicNum;}
         void setResultFile();//set relative path and file name ,maybe .txt or .xml
         void setResultPath(string _outFilePath);//set relative path and file name ,maybe .txt or .xml
-        void printTopicResult(multimap<float,string>& _topicResult );
+        void printTopicResult(multimap<double,string>& _topicResult );
         void addTopic(string _topicName)
         {
             topicInput _topic;

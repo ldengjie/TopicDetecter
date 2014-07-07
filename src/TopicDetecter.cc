@@ -61,7 +61,7 @@ bool TopicDetecter::genWordSet()
         string proTag="/";
         int proPos;
         int wordPos=0;
-        string proShield="dchkrmxwyueopb";
+        string proShield="tdchkrmxwyueopb";
 
         //loop all weibos 
         while( getline(infile,line) )
@@ -325,12 +325,12 @@ bool TopicDetecter::genTopicSet()
     map<string,int> topicWordMapForBool[topicNum];
 
     int minTopicNum=0;
-    float maxDis;
-    float dis=0.;
+    double maxDis;
+    double dis=0.;
     bool isOk=0;
     string okStr[2]={"NO","OK"};
     int loopNum=0;
-    multimap<float,string> topicInfForTest;
+    multimap<double,string> topicInfForTest;
     while( !isOk )
     {
         cout<<" "<<endl;
@@ -413,7 +413,7 @@ bool TopicDetecter::genTopicSet()
     resultFile.open(resultFileName.c_str());
     char coutStr[100];
     resultFile<<"ordered by count ; ordered by wordstore "<<endl;
-    multimap<float,string> topicInf;
+    multimap<double,string> topicInf;
     for( int i=0 ; i<topicNum ; i++ )
     {
         cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
@@ -427,14 +427,14 @@ bool TopicDetecter::genTopicSet()
         sprintf(coutStr," %19s %6s ","Word","Count");
         resultFile<<coutStr<<endl;
         int rankNum=0;
-        float countTag=0.;
+        double countTag=0.;
         if( !topicInf.empty() )
         {
-            multimap<float,string>::iterator it=topicInf.end() ;
+            multimap<double,string>::iterator it=topicInf.end() ;
             it--;
             for( ; it!=topicInf.begin(); it-- )
             {
-                float countTmp=wordSet[it->second].count;
+                double countTmp=wordSet[it->second].count;
                 if( countTmp!=countTag )
                 {
                     rankNum++;
@@ -461,9 +461,8 @@ bool TopicDetecter::genTopicSet()
     //calculate weight for each word
     cout<<" "<<endl;
     gettimeofday( &startTime, NULL );
-    multimap<float,string> topicWordScore;
-    float wordScore=0.;
-    float* topicTotalCount=(float*)calloc(topicNum,sizeof(float));
+    multimap<double,string> topicWordScore;
+    double* topicTotalCount=(double*)calloc(topicNum,sizeof(double));
     for( int i=0 ; i<topicNum ; i++ )
     {
         //calculate total word count in each topic
@@ -474,9 +473,10 @@ bool TopicDetecter::genTopicSet()
         }
         for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
         {
+            double wordScore=0.;
             WordInfo &event=wordSet[topicWord[i][j]];
-            float totalCorrCount=0.;
-            float totalStepCount=0.;
+            double totalCorrCount=0.;
+            double totalStepCount=0.;
             for( map<string,CorrInfo>::iterator it=event.corrWord.begin() ; it!=event.corrWord.end() ; it++ )
             {
                 totalCorrCount+=it->second.corrCount;
@@ -484,32 +484,39 @@ bool TopicDetecter::genTopicSet()
             }
             totalCorrCount+=event.count;
             //0. possibility belong to this topic
-            float pInTopic=0.;
+            double pInTopic=0.;
             for( map<string,CorrInfo>::iterator it=event.corrWord.begin() ; it!=event.corrWord.end() ; it++ )
             {
                 if( topicWordMapForBool[i][it->first] )
                 {
 
                     //1.1 sigma of distance interval of correlative word
-                    float stepSigma=sqrt((float)it->second.stepSquare/it->second.stepCount); 
+                    double stepSigma=sqrt((double)it->second.stepSquare/it->second.stepCount); 
+                    //double stepSigmaTmp=sqrt((double)it->second.stepSquare/it->second.stepCount); 
+                    //double stepSigma=exp((stepSigmaTmp-25)*(stepSigmaTmp-25)/50); 
+                    //double stepSigma=1; 
+                    //cout<<"stepSigmaTmp  : "<<stepSigmaTmp<<endl;
+                    //double stepSigma=abs(stepSigmaTmp-25); 
+                    //cout<<"stepSigma  : "<<stepSigma<<endl;
                     //1.2 correlative fraction of correlative word in correlative word list
-                    //float corrFrac=it->second.frac;
-                    float corrFrac=it->second.corrCount/totalCorrCount;
+                    //double corrFrac=it->second.frac;
+                    double corrFrac=it->second.corrCount/totalCorrCount;
                     pInTopic+=it->second.stepCount/totalStepCount;
                     //1.3 count fraction of correlative word in all words of this topic
-                    float countFrac=wordSet[it->first].count/topicTotalCount[i];
+                    double countFrac=wordSet[it->first].count/topicTotalCount[i];
                     wordScore+=countFrac*corrFrac/stepSigma;
-                    //if(j>(int)topicWord[i].size()-2)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<"))"<<endl;
+                    if(j>(int)topicWord[i].size()-3)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<")) wordScore:"<<wordScore<<endl;
 
                 }
             }
             //2. count of itself,treat count==1 as count ==2 to avoid ln(1)=0.
-            //float wordCount=log(event.count==1?2:event.count);
-            float wordCount=event.count/topicTotalCount[i];
-            //float wordCount=event.count;
+            //double wordCount=log(event.count==1?2:event.count);
+            //double wordCount=log(event.count);
+            double wordCount=event.count/topicTotalCount[i];
+            //double wordCount=event.count;
 
             wordScore*=(wordCount*pInTopic);
-            //if(j>(int)topicWord[i].size()-2)cout<<topicWord[i][j]<<"("<<event.count <<")  : "<<wordScore<<" (wordCount:"<<wordCount<<" pInTopic:"<<pInTopic<<" totalCorrCount:"<<totalCorrCount<<" topicTotalCount[i]:"<<topicTotalCount[i]<<")"<<endl;
+            if(j>(int)topicWord[i].size()-3)cout<<topicWord[i][j]<<"("<<event.count <<")  : "<<wordScore<<" (wordCount:"<<wordCount<<" pInTopic:"<<pInTopic<<" totalCorrCount:"<<totalCorrCount<<" topicTotalCount[i]:"<<topicTotalCount[i]<<")"<<endl;
 
             topicWordScore.insert(make_pair(wordScore,topicWord[i][j]));
 
@@ -525,7 +532,7 @@ bool TopicDetecter::genTopicSet()
         int storeRankNum=1;
         if( !topicWordScore.empty() )
         {
-            multimap<float,string>::iterator it=topicWordScore.end() ;
+            multimap<double,string>::iterator it=topicWordScore.end() ;
             it--;
             for( ; it!=topicWordScore.begin(); it-- )
             {
@@ -587,7 +594,7 @@ bool TopicDetecter::normCount(WordInfo& inWord)
     {
         return 1;
     }
-    float totalCorrCount2=0.;
+    double totalCorrCount2=0.;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
         totalCorrCount2+=iit->second.corrCount*iit->second.corrCount;
@@ -595,7 +602,7 @@ bool TopicDetecter::normCount(WordInfo& inWord)
     totalCorrCount2+=inWord.count*inWord.count;
     //normalize to 1 
     inWord.frac=inWord.count/sqrt(totalCorrCount2);
-    float corrFrac=0.;
+    double corrFrac=0.;
     for( map<string,CorrInfo>::iterator iit=inWord.corrWord.begin() ; iit!=inWord.corrWord.end() ; iit++ )
     {
         iit->second.frac=iit->second.corrCount/sqrt(totalCorrCount2);
@@ -604,12 +611,12 @@ bool TopicDetecter::normCount(WordInfo& inWord)
     return 1;
 
 }
-void TopicDetecter::printTopicResult(multimap<float,string>& _topicResult)
+void TopicDetecter::printTopicResult(multimap<double,string>& _topicResult)
 {
     int coutNum=0;
     if( !_topicResult.empty() )
     {
-        multimap<float,string>::iterator it=_topicResult.end() ;
+        multimap<double,string>::iterator it=_topicResult.end() ;
         it--;
         for( ; it!=_topicResult.begin(); it-- )
         {
