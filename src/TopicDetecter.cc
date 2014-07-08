@@ -19,7 +19,7 @@ int main(int argc, char *argv[])// ./TopicDetecter ../data/lianghui/liangHui_d_1
     string infileName=argv[1];
 
     //new class
-    TopicDetecter* t1=new TopicDetecter(infileName,12);
+    TopicDetecter* t1=new TopicDetecter(infileName,10);
     //generate wordSet, if *WordSet.ldj does not exist,create it 
     t1->genWordSet();
 
@@ -514,6 +514,8 @@ bool TopicDetecter::genTopicSet()
             //double wordCount=log(event.count);
             double wordCount=event.count/topicTotalCount[i];
             //double wordCount=event.count;
+
+            wordScore=sqrt(wordScore);
 
             wordScore*=(wordCount*pInTopic);
             if(j>(int)topicWord[i].size()-3)cout<<topicWord[i][j]<<"("<<event.count <<")  : "<<wordScore<<" (wordCount:"<<wordCount<<" pInTopic:"<<pInTopic<<" totalCorrCount:"<<totalCorrCount<<" topicTotalCount[i]:"<<topicTotalCount[i]<<")"<<endl;
