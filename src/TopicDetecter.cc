@@ -9,25 +9,30 @@ int main(int argc, char *argv[])// ./TopicDetecter ../data/lianghui/liangHui_d_1
     if( argc==1 )
     {
         cout<<"Error : must need a input file ..."<<endl;
-        exit(0);
+        //exit(0);
+        return 0;
     }
-    if( argc>2 )
+    //if( argc>2 )
+    //{
+    //cout<<"Error : only need one input file ..."<<endl;
+    //exit(0);
+    //}
+    for( int i=1 ; i<argc ; i++ )
     {
-        cout<<"Error : only need one input file ..."<<endl;
-        exit(0);
+        string infileName=argv[i];
+        //new class
+        TopicDetecter* t1=new TopicDetecter(infileName,10);
+        //generate wordSet, if *WordSet.ldj does not exist,create it 
+        if(t1->genWordSet())
+        {
+            //generate topicSet
+            t1->genTopicSet();
+        }
+        //delete class
+        delete t1;
+        t1=NULL;
     }
-    string infileName=argv[1];
 
-    //new class
-    TopicDetecter* t1=new TopicDetecter(infileName,10);
-    //generate wordSet, if *WordSet.ldj does not exist,create it 
-    t1->genWordSet();
-
-    //generate topicSet
-    t1->genTopicSet();
-    //delete class
-    delete t1;
-    t1=NULL;
     gettimeofday( &allFinishTime, NULL );
     timeInterval=allFinishTime.tv_sec-allStartTime.tv_sec+(allFinishTime.tv_usec-allStartTime.tv_usec)/1000000.;
     cout<<"All done !!! (Used time : "<<timeInterval<<" s = "<<(int)timeInterval/3600<<"h"<<(int)timeInterval%3600/60 <<"min"<<(int)timeInterval%3600%60 <<"s) ..."<<endl;
@@ -49,7 +54,8 @@ bool TopicDetecter::genWordSet()
         if( !infile )
         {
             cout<<"file doesn't exist"<<endl;
-            exit(0);
+            //exit(0);
+            return 0;
         }
 
         int linesize;
@@ -164,7 +170,8 @@ bool TopicDetecter::genWordSet()
                 }else
                 {
                     cout<<" !!! Error : word count!=pos.size "<<endl;
-                    exit(0);
+                    //exit(0);
+                    return 0;
                 }
             }
             wordStart=0;
@@ -318,7 +325,8 @@ bool TopicDetecter::genTopicSet()
     if( meanWord.size()!=(unsigned)topicNum )
     {
         cout<<"Error : meanWord.size()!= "<<topicNum<<" ,please check it ..."<<endl;
-        exit(0);
+        //exit(0);
+        return 0;
     }
     //loop for classifying topics
     vector<string> topicWord[topicNum];
@@ -384,10 +392,14 @@ bool TopicDetecter::genTopicSet()
             cout<<" ["<<okStr[isOk?1:0]<<" "<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
 
             //print out details of this topic during select topics
-            for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+            for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
             {
-                topicInfForTest.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
+                topicInfForTest.insert(make_pair(wordSet[*iit].count,*iit));
             }
+            //for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+            //{
+            //topicInfForTest.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
+            //}
             printTopicResult(topicInfForTest);
             topicInfForTest.clear();
         }
@@ -409,44 +421,73 @@ bool TopicDetecter::genTopicSet()
     cout<<" "<<endl;
     cout<<"!!! find topics !!! "<<endl;
     gettimeofday( &finishTime, NULL );
+
+    ofstream resultFile_final;
+    //string resultFileName_final=resultFileName;
+    //resultFileName_final+="_final";
+    //resultFile_final.open(resultFileName_final.c_str());
+    resultFile_final.open(resultFileName.c_str());
+
+    string resultFileName_temp=resultFileName;
+    resultFileName_temp+="_temp";
     ofstream resultFile;
-    resultFile.open(resultFileName.c_str());
+    resultFile.open(resultFileName_temp.c_str());
+
+
     char coutStr[100];
     resultFile<<"ordered by count ; ordered by wordstore "<<endl;
+    /*
     multimap<double,string> topicInf;
+        cout<<"1 "<<endl;
     for( int i=0 ; i<topicNum ; i++ )
     {
+        topicInf.clear();
         cout<<" ["<<i+1 <<"th] topic : "<<topicWord[i].size()<<" ";
-        for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+        cout<<"2 "<<endl;
+        for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
         {
-            topicInf.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
+            topicInf.insert(make_pair(wordSet[*iit].count,*iit));
         }
+        cout<<"3 "<<endl;
+        //for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+        //{
+        //topicInf.insert(make_pair(wordSet[topicWord[i][j]].count,topicWord[i][j]));
+        //}
         printTopicResult(topicInf);
+        cout<<"4 "<<endl;
         resultFile<<endl;
         resultFile<<" ["<<i+1 <<"th] topic (ordered by count): "<<topicWord[i].size()<<" "<<endl;
         sprintf(coutStr," %19s %6s ","Word","Count");
         resultFile<<coutStr<<endl;
         int rankNum=0;
         double countTag=0.;
+        cout<<"5 "<<endl;
         if( !topicInf.empty() )
         {
             multimap<double,string>::iterator it=topicInf.end() ;
             it--;
+        cout<<"5.1 "<<endl;
             for( ; it!=topicInf.begin(); it-- )
             {
+        cout<<"5.2 "<<endl;
                 double countTmp=wordSet[it->second].count;
                 if( countTmp!=countTag )
                 {
                     rankNum++;
                     countTag=countTmp;
                 }
+        cout<<"5.3 "<<endl;
                 wordSet[it->second].rank=rankNum;
+        cout<<"5.4 "<<endl;
                 sprintf(coutStr," %21s %6.0f ",it->second.c_str(),it->first);
                 resultFile<<coutStr<<endl;
+        cout<<"5.5 "<<endl;
             }
         }
-        topicInf.clear();
+        cout<<"6 "<<endl;
+        cout<<"7 "<<endl;
     }
+    */
 
     gettimeofday( &finishTime, NULL );
     timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
@@ -466,15 +507,21 @@ bool TopicDetecter::genTopicSet()
     for( int i=0 ; i<topicNum ; i++ )
     {
         //calculate total word count in each topic
-        for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+        for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
         {
-            topicTotalCount[i]+=wordSet[topicWord[i][j]].count;
-            topicWordMapForBool[i][topicWord[i][j]]=1;
+            topicTotalCount[i]+=wordSet[*iit].count;
+            topicWordMapForBool[i][*iit]=1;
         }
-        for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+        //for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+        //{
+        //topicTotalCount[i]+=wordSet[topicWord[i][j]].count;
+        //topicWordMapForBool[i][topicWord[i][j]]=1;
+        //}
+        //for( int j=0 ; j<(int)topicWord[i].size() ; j++ )
+        for( vector<string>::iterator iit=topicWord[i].begin() ; iit!=topicWord[i].end() ; iit++ )
         {
             double wordScore=0.;
-            WordInfo &event=wordSet[topicWord[i][j]];
+            WordInfo &event=wordSet[*iit];
             double totalCorrCount=0.;
             double totalStepCount=0.;
             for( map<string,CorrInfo>::iterator it=event.corrWord.begin() ; it!=event.corrWord.end() ; it++ )
@@ -505,7 +552,7 @@ bool TopicDetecter::genTopicSet()
                     //1.3 count fraction of correlative word in all words of this topic
                     double countFrac=wordSet[it->first].count/topicTotalCount[i];
                     wordScore+=countFrac*corrFrac/stepSigma;
-                    if(j>(int)topicWord[i].size()-3)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<")) wordScore:"<<wordScore<<endl;
+                    //if(j>(int)topicWord[i].size()-3)cout<<it->first<<" : "<<countFrac*corrFrac/stepSigma<<" (countFrac:"<<countFrac<<" corrFrac:"<<corrFrac<<" stepSigma:"<<stepSigma<<"(stepSquare:"<<it->second.stepSquare<<" stepCount:"<<it->second.stepCount <<")) wordScore:"<<wordScore<<endl;
 
                 }
             }
@@ -518,9 +565,10 @@ bool TopicDetecter::genTopicSet()
             wordScore=sqrt(wordScore);
 
             wordScore*=(wordCount*pInTopic);
-            if(j>(int)topicWord[i].size()-3)cout<<topicWord[i][j]<<"("<<event.count <<")  : "<<wordScore<<" (wordCount:"<<wordCount<<" pInTopic:"<<pInTopic<<" totalCorrCount:"<<totalCorrCount<<" topicTotalCount[i]:"<<topicTotalCount[i]<<")"<<endl;
+            //if(j>(int)topicWord[i].size()-3)cout<<topicWord[i][j]<<"("<<event.count <<")  : "<<wordScore<<" (wordCount:"<<wordCount<<" pInTopic:"<<pInTopic<<" totalCorrCount:"<<totalCorrCount<<" topicTotalCount[i]:"<<topicTotalCount[i]<<")"<<endl;
 
-            topicWordScore.insert(make_pair(wordScore,topicWord[i][j]));
+            //topicWordScore.insert(make_pair(wordScore,topicWord[i][j]));
+            topicWordScore.insert(make_pair(wordScore,*iit));
 
         }
         //print out details of this topic after select topics based on 'wordScore' 
@@ -528,10 +576,17 @@ bool TopicDetecter::genTopicSet()
         printTopicResult(topicWordScore);
 
         resultFile<<endl;
+
+
+        resultFile.open(resultFileName.c_str());
         resultFile<<"keywords in the "<<i+1 <<"th topic finally (ordered by wordstore): "<<topicWord[i].size()<<endl;
-        sprintf(coutStr," %6s %19s %15s %6s %6s","Rank","Word","Store","Count","Count Ranking");
+        resultFile_final<<"keywords in the "<<i+1 <<"th topic finally (ordered by wordstore): "<<topicWord[i].size()<<endl;
+        sprintf(coutStr," %6s %19s %15s %6s %6s","Rank","Word","Score","Count","Count Ranking");
         resultFile<<coutStr<<endl;
+        resultFile_final<<coutStr<<endl;
         int storeRankNum=1;
+
+        int saveNum=0;
         if( !topicWordScore.empty() )
         {
             multimap<double,string>::iterator it=topicWordScore.end() ;
@@ -539,7 +594,9 @@ bool TopicDetecter::genTopicSet()
             for( ; it!=topicWordScore.begin(); it-- )
             {
                 sprintf(coutStr," %6d %21s %15e %6.0f %6d",storeRankNum++,it->second.c_str(),it->first,wordSet[it->second].count,wordSet[it->second].rank);
+                if(saveNum<20) resultFile_final<<coutStr<<endl;
                 resultFile<<coutStr<<endl;
+                saveNum++;
             }
         }
         topicWordScore.clear();
@@ -549,6 +606,7 @@ bool TopicDetecter::genTopicSet()
     timeInterval=finishTime.tv_sec-startTime.tv_sec+(finishTime.tv_usec-startTime.tv_usec)/1000000.;
     cout<<"Finish calculating weight for each word (Used time : "<<timeInterval<<" s) ..."<<endl;
     resultFile.close();
+    resultFile_final.close();
     //save into resultFile
     return 1;
 }
@@ -559,9 +617,9 @@ void TopicDetecter::setResultFile()
     {
         beginPos=inputFile.rfind("/")+1;
     }
-    if( inputFile.rfind(".")!=string::npos&&inputFile.rfind(".")>(unsigned)beginPos )
+    if( inputFile.rfind("_")!=string::npos&&inputFile.rfind("_")>(unsigned)beginPos )
     {
-        endPos=inputFile.rfind(".")-1;
+        endPos=inputFile.rfind("_")-1;
     }else
     {
         endPos=inputFile.size();
